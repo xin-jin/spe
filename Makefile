@@ -4,7 +4,6 @@
 #
 
 # Executables to build
-EXEC += primes
 EXEC += viewer
 
 # Get the shell name to determine the OS

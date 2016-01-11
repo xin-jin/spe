@@ -10,7 +10,12 @@ EXEC += viewer
 UNAME := $(shell uname)
 
 # Define the C++ compiler to use
-CXX := clang++-3.5 -std=c++11
+ifeq ($(UNAME), Linux)
+  CXX := clang++-3.5
+endif
+ifeq ($(UNAME), Darwin)
+  CXX := clang++
+endif
 
 # Dependency directory and flags
 DEPSDIR := $(shell mkdir -p .deps; echo .deps)
@@ -25,7 +30,7 @@ DEPSFLAGS = -MD -MF $(DEPSFILE) -MP
 INCLUDES += -I.
 
 # Define CXX compile flags
-CXXFLAGS += -O3 -funroll-loops -W -Wall -Wextra #-Wfatal-errors
+CXXFLAGS += -std=c++11 -O3 -funroll-loops -W -Wall -Wextra #-Wfatal-errors
 
 # Define any directories containing libraries
 #   To include directories use -Lpath/to/files
@@ -34,10 +39,10 @@ LDFLAGS +=
 # Define any libraries to link into executable
 #   To link in libraries (libXXX.so or libXXX.a) use -lXXX
 ifeq ($(UNAME), Linux)
-LDLIBS += -lSDL -lGL -lGLU
+  LDLIBS += -lSDL -lGL -lGLU
 endif
 ifeq ($(UNAME), Darwin)
-LDLIBS += `sdl-config --libs` #-lSDL -lSDLmain -framework OpenGL -framework Cocoa
+  LDLIBS += -L/usr/local/lib -lSDLmain -lSDL -Wl,-framework,Cocoa,-framework,OpenGL
 endif
 
 ##################

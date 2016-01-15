@@ -22,7 +22,7 @@
  */
 class Graph {
 private:
-
+	// Internal data members are declared at the end
 public:
 
     //
@@ -53,7 +53,6 @@ public:
 
     /** Construct an empty graph. */
     Graph(): points({}), edges({}) {
-        // HW0: YOUR CODE HERE
     }
 
     /** Default destructor */
@@ -312,6 +311,7 @@ public:
 private:
 	std::vector<Point> points;
 	std::vector<typename Graph::Edge> edges;
+	// For checking the existence of an edge, useful for has_edge
 	std::set<Edge> edges_set;
 };
 

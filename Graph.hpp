@@ -117,6 +117,7 @@ public:
          * and y, exactly one of x == y, x < y, and y < x is true.
          */
         bool operator<(const Node& n) const {
+			// Order is defined as dictionary order in (graph_, index_)
 			if (graph_ < n.graph_ || (graph_ == n.graph_ && index_ < n.index_))
 				return true;
             else
@@ -129,7 +130,7 @@ public:
 
 		/** Constructs a Node corresponding to given index and graph */
 		Node(const Graph& graph, size_type index)
-			: index_(index), graph_(&graph){
+			: index_(index), graph_(&graph) {
 		}
         // The element's index in the Graph container
         size_type index_;
@@ -168,11 +169,10 @@ public:
      * Complexity: O(1).
      */
     bool has_node(const Node& n) const {
-		for (size_type i = 0; i != size(); ++i) {
-			if (n == node(i))
-				return true;
-		}
-        return false;
+		if (n.graph_ == this)
+			return true;
+		else
+			return false;
     }
 
     /** Return the node with index @a i.
@@ -228,7 +228,9 @@ public:
          * std::map<>. It need not have any interpretive meaning.
          */
         bool operator<(const Edge& e) const {
-			if (n1_ < e.n1_ || (n1_ == e.n1_ && n2_ < e.n2_))
+			// Order is defined as dictionary order in (min(n1_, n2_), max(n1_, n2_))
+			auto m = std::min(n1_, n2_), me = std::min(e.n1_, e.n2_);
+			if (m < me || (m == me && std::max(n1_, n2_) < std::max(e.n1_, e.n2_)))
 				return true;
 			else
 				return false;
@@ -240,7 +242,7 @@ public:
 
 		/** Constructs an edge given graph, index, and two nodes*/
 		Edge(const Node& n1, const Node& n2)
-			: n1_(n1), n2_(n2){
+			: n1_(n1), n2_(n2) {
 		}
 
 		// Two nodes of the edge
@@ -310,7 +312,7 @@ public:
 
 private:
 	std::vector<Point> points;
-	std::vector<typename Graph::Edge> edges;
+	std::vector<Edge> edges;
 	// For checking the existence of an edge, useful for has_edge
 	std::set<Edge> edges_set;
 };

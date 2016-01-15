@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <vector>
 #include <cassert>
+#include <set>
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
@@ -21,12 +22,6 @@
  */
 class Graph {
 private:
-
-    // HW0: YOUR CODE HERE
-    // Use this space for declarations of important internal types you need
-    // later in the Graph's definition.
-    // (As with all the "YOUR CODE HERE" markings, you may not actually NEED
-    // code here. Just use the space if you need it.)
 
 public:
 
@@ -91,18 +86,15 @@ public:
          * @endcode
          */
         Node() {
-            // HW0: YOUR CODE HERE
         }
 
         /** Return this node's position. */
         const Point& position() const {
-            // HW0: YOUR CODE HERE
             return graph_->points[index_];
         }
 
         /** Return this node's index, a number in the range [0, graph_size). */
         size_type index() const {
-            // HW0: YOUR CODE HERE
             return index_;
         }
 
@@ -111,8 +103,6 @@ public:
          * Equal nodes have the same graph and the same index.
          */
         bool operator==(const Node& n) const {
-            // HW0: YOUR CODE HERE
-            (void) n;          // Quiet compiler warning
 			if (graph_ == n.graph_ && index_ == n.index_)
 				return true;
             else
@@ -128,8 +118,6 @@ public:
          * and y, exactly one of x == y, x < y, and y < x is true.
          */
         bool operator<(const Node& n) const {
-            // HW0: YOUR CODE HERE
-            (void) n;           // Quiet compiler warning
 			if (graph_ < n.graph_ || (graph_ == n.graph_ && index_ < n.index_))
 				return true;
             else
@@ -139,10 +127,6 @@ public:
     private:
         // Allow Graph to access Node's private member data and functions.
         friend class Graph;
-        // HW0: YOUR CODE HERE
-        // Use this space to declare private data members and methods for Node
-        // that will not be visible to users, but may be useful within Graph.
-        // i.e. Graph needs a way to construct valid Node objects
 
 		/** Constructs a Node corresponding to given index and graph */
 		Node(const Graph& graph, size_type index)
@@ -159,7 +143,6 @@ public:
      * Complexity: O(1).
      */
     size_type size() const {
-        // HW0: YOUR CODE HERE
         return points.size();
     }
 
@@ -176,10 +159,8 @@ public:
      * Complexity: O(1) amortized operations.
      */
     Node add_node(const Point& position) {
-        // HW0: YOUR CODE HERE
-        (void) position;      // Quiet compiler warning
 		points.push_back(position);
-        return Node(*this, size()-1);        // Invalid node
+        return Node(*this, size()-1);
     }
 
     /** Determine if a Node belongs to this Graph
@@ -188,8 +169,6 @@ public:
      * Complexity: O(1).
      */
     bool has_node(const Node& n) const {
-        // HW0: YOUR CODE HERE
-        (void) n;            // Quiet compiler warning
 		for (size_type i = 0; i != size(); ++i) {
 			if (n == node(i))
 				return true;
@@ -204,9 +183,7 @@ public:
      * Complexity: O(1).
      */
     Node node(size_type i) const {
-        // HW0: YOUR CODE HERE
-        (void) i;             // Quiet compiler warning
-        return Node(*this, i);        // Invalid node
+        return Node(*this, i);
     }
 
     //
@@ -223,19 +200,16 @@ public:
     public:
         /** Construct an invalid Edge. */
         Edge() {
-            // HW0: YOUR CODE HERE
         }
 
         /** Return a node of this Edge */
         Node node1() const {
-            // HW0: YOUR CODE HERE
-            return n1_;      // Invalid Node
+            return n1_;
         }
 
         /** Return the other node of this Edge */
         Node node2() const {
-            // HW0: YOUR CODE HERE
-            return n2_;      // Invalid Node
+            return n2_;
         }
 
         /** Test whether this edge and @a e are equal.
@@ -243,8 +217,7 @@ public:
          * Equal edges represent the same undirected edge between two nodes.
          */
         bool operator==(const Edge& e) const {
-            (void) e;           // Quiet compiler warning
-			if (n1_ == e.n1_ && n2_ == e.n2_)
+			if ((n1_ == e.n1_ && n2_ == e.n2_) || (n1_ == e.n2_ && n2_ == e.n1_))
 				return true;
 			else
 				return false;
@@ -256,7 +229,6 @@ public:
          * std::map<>. It need not have any interpretive meaning.
          */
         bool operator<(const Edge& e) const {
-            (void) e;           // Quiet compiler warning
 			if (n1_ < e.n1_ || (n1_ == e.n1_ && n2_ < e.n2_))
 				return true;
 			else
@@ -266,10 +238,6 @@ public:
     private:
         // Allow Graph to access Edge's private member data and functions.
         friend class Graph;
-        // HW0: YOUR CODE HERE
-        // Use this space to declare private data members and methods for Edge
-        // that will not be visible to users, but may be useful within Graph.
-        // i.e. Graph needs a way to construct valid Edge objects
 
 		/** Constructs an edge given graph, index, and two nodes*/
 		Edge(const Node& n1, const Node& n2)
@@ -285,7 +253,6 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     size_type num_edges() const {
-        // HW0: YOUR CODE HERE
         return edges.size();
     }
 
@@ -295,9 +262,7 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     Edge edge(size_type i) const {
-        // HW0: YOUR CODE HERE
-        (void) i;             // Quiet compiler warning
-        return edges[i];        // Invalid Edge
+        return edges[i];
     }
 
     /** Test whether two nodes are connected by an edge.
@@ -307,14 +272,10 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     bool has_edge(const Node& a, const Node& b) const {
-        // HW0: YOUR CODE HERE
-        (void) a; (void) b;   // Quiet compiler warning
-		Edge tmpEdge = Edge(a, b);
-		for (size_type i = 0; i != num_edges(); ++i) {
-			if (tmpEdge == edges[i])
-				return true;
-		}
-        return false;
+		if (edges_set.find(Edge(a, b)) != edges_set.end())
+			return true;
+		else
+			return false;
     }
 
     /** Add an edge to the graph, or return the current edge if it already exists.
@@ -330,10 +291,13 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     Edge add_edge(const Node& a, const Node& b) {
-        // HW0: YOUR CODE HERE
-        (void) a, (void) b;   // Quiet compiler warning
-		edges.push_back(Edge(a, b));
-        return edges[num_edges()-1];        // Invalid Edge
+		if (has_edge(a, b))
+			return Edge(a, b);
+		else {
+			edges.push_back(Edge(a, b));
+			edges_set.insert(Edge(a, b));
+			return edges[num_edges()-1];
+		}
     }
 
     /** Remove all nodes and edges from this graph.
@@ -342,19 +306,13 @@ public:
      * Invalidates all outstanding Node and Edge objects.
      */
 	void clear() {
-		// HW0: YOUR CODE HERE
 		*this = Graph();
 	}
 
 private:
-
-    // HW0: YOUR CODE HERE
-    // Use this space for your Graph class's internals:
-    //   helper functions, data members, and so forth.
-
 	std::vector<Point> points;
 	std::vector<typename Graph::Edge> edges;
-
+	std::set<Edge> edges_set;
 };
 
 #endif // CME212_GRAPH_HPP

@@ -43,7 +43,7 @@ template<> struct gltype<double>         : public gltype_v<GL_DOUBLE> {};
 
 /** SDLViewer class to view points and edges
  */
-class SDLViewer {
+ class SDLViewer {
  private:
   // Rendering surface
   SDL_Surface* surface_;

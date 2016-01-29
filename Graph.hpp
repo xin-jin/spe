@@ -52,7 +52,7 @@ public:
     //
 
     /** Construct an empty graph. */
-    Graph(): points({}), edges({}) {
+    Graph(): points_({}), edges_({}) {
     }
 
     /** Default destructor */
@@ -89,7 +89,7 @@ public:
 
         /** Return this node's position. */
         const Point& position() const {
-            return graph_->points[index_];
+            return graph_->points_[index_];
         }
 
         /** Return this node's index, a number in the range [0, graph_size). */
@@ -102,10 +102,7 @@ public:
          * Equal nodes have the same graph and the same index.
          */
         bool operator==(const Node& n) const {
-			if (graph_ == n.graph_ && index_ == n.index_)
-				return true;
-            else
-				return false;
+			return (graph_ == n.graph_ && index_ == n.index_);
         }
 
         /** Test whether this node is less than @a n in a global order.
@@ -129,8 +126,9 @@ public:
         friend class Graph;
 
 		/** Constructs a Node corresponding to given index and graph */
-		Node(const Graph& graph, size_type index)
-			: index_(index), graph_(&graph) {
+		Node(const Graph* graph, size_type index)
+			: index_(index), graph_(graph) {
+
 		}
         // The element's index in the Graph container
         size_type index_;
@@ -143,7 +141,7 @@ public:
      * Complexity: O(1).
      */
     size_type size() const {
-        return points.size();
+        return points_.size();
     }
 
     /** Synonym for size(). */
@@ -159,8 +157,8 @@ public:
      * Complexity: O(1) amortized operations.
      */
     Node add_node(const Point& position) {
-		points.push_back(position);
-        return Node(*this, size()-1);
+		points_.push_back(position);
+        return Node(this, size()-1);
     }
 
     /** Determine if a Node belongs to this Graph
@@ -182,7 +180,7 @@ public:
      * Complexity: O(1).
      */
     Node node(size_type i) const {
-        return Node(*this, i);
+        return Node(this, i);
     }
 
     //
@@ -203,12 +201,12 @@ public:
 
         /** Return a node of this Edge */
         Node node1() const {
-            return n1_;
+            return Node(graph_, i1_);
         }
 
         /** Return the other node of this Edge */
         Node node2() const {
-            return n2_;
+            return Node(graph_, i2_);
         }
 
         /** Test whether this edge and @a e are equal.
@@ -216,7 +214,7 @@ public:
          * Equal edges represent the same undirected edge between two nodes.
          */
         bool operator==(const Edge& e) const {
-			if ((n1_ == e.n1_ && n2_ == e.n2_) || (n1_ == e.n2_ && n2_ == e.n1_))
+			if ((i1_ == e.i1_ && i2_ == e.i2_) || (i1_ == e.i2_ && i2_ == e.i1_))
 				return true;
 			else
 				return false;
@@ -228,9 +226,9 @@ public:
          * std::map<>. It need not have any interpretive meaning.
          */
         bool operator<(const Edge& e) const {
-			// Order is defined as dictionary order in (min(n1_, n2_), max(n1_, n2_))
-			auto m = std::min(n1_, n2_), me = std::min(e.n1_, e.n2_);
-			if (m < me || (m == me && std::max(n1_, n2_) < std::max(e.n1_, e.n2_)))
+			// Order is defined as dictionary order in (min(i1_, i2_), max(i1_, i2_))
+			auto m = std::min(i1_, i2_), me = std::min(e.i1_, e.i2_);
+			if (m < me || (m == me && std::max(i1_, i2_) < std::max(e.i1_, e.i2_)))
 				return true;
 			else
 				return false;
@@ -240,13 +238,15 @@ public:
         // Allow Graph to access Edge's private member data and functions.
         friend class Graph;
 
-		/** Constructs an edge given graph, index, and two nodes*/
-		Edge(const Node& n1, const Node& n2)
-			: n1_(n1), n2_(n2) {
+		/** Constructs an edge given a graph pointer and two node indices*/
+		Edge(const Graph* graph, const size_type& i1, const size_type& i2)
+			: i1_(i1), i2_(i2), graph_(graph) {
 		}
 
 		// Two nodes of the edge
-		Node n1_, n2_;
+		size_type i1_, i2_;
+		// Pointer back to the Graph contrainer
+		const Graph *graph_;
     };
 
     /** Return the total number of edges in the graph.
@@ -254,7 +254,7 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     size_type num_edges() const {
-        return edges.size();
+        return edges_.size();
     }
 
     /** Return the edge with index @a i.
@@ -263,7 +263,7 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     Edge edge(size_type i) const {
-        return edges[i];
+        return edges_[i];
     }
 
     /** Test whether two nodes are connected by an edge.
@@ -273,11 +273,10 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     bool has_edge(const Node& a, const Node& b) const {
-		if (edges_set.find(Edge(a, b)) != edges_set.end())
-			return true;
-		else
-			return false;
-    }
+		return (a.graph_ == b.graph_)
+			&& (a.graph_ == this)
+			&& (edgeSet_.find(Graph::ordered_id(a, b))) != edgeSet_.end();
+	}
 
     /** Add an edge to the graph, or return the current edge if it already exists.
      * @pre @a a and @a b are distinct valid nodes of this graph
@@ -293,11 +292,11 @@ public:
      */
     Edge add_edge(const Node& a, const Node& b) {
 		if (has_edge(a, b))
-			return Edge(a, b);
+			return Edge(this, a.index(), b.index());
 		else {
-			edges.push_back(Edge(a, b));
-			edges_set.insert(Edge(a, b));
-			return edges[num_edges()-1];
+			edges_.push_back(Edge(this, a.index(), b.index()));
+			edgeSet_.insert(ordered_id(a, b));
+			return edges_[num_edges()-1];
 		}
     }
 
@@ -307,14 +306,21 @@ public:
      * Invalidates all outstanding Node and Edge objects.
      */
 	void clear() {
-		*this = Graph();
+		points_.clear();
+		edges_.clear();
+		edgeSet_.clear();
 	}
 
 private:
-	std::vector<Point> points;
-	std::vector<Edge> edges;
+	std::vector<Point> points_;
+	std::vector<Edge> edges_;
 	// For checking the existence of an edge, useful for has_edge
-	std::set<Edge> edges_set;
+	std::set<std::pair<size_type, size_type>> edgeSet_;
+
+	static std::pair<size_type, size_type> ordered_id(const Node& a, const Node& b) {
+		size_type ai = a.index(), bi = b.index();
+		return std::make_pair(std::min(ai, bi), std::max(ai, bi));
+	}
 };
 
 #endif // CME212_GRAPH_HPP

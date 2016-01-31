@@ -152,8 +152,8 @@ public:
 
 		/** Return the degree of the node */
 		size_type degree() const {
-			return graph_->adjList[index_].size()
-					  + graph_->adjListLower[index_].size();
+			return graph_->adjList_[index_].size()
+					  + graph_->adjListLower_[index_].size();
 		}
 
 		/** Return the beginning position of incident_iterator */
@@ -339,11 +339,6 @@ public:
 				&& i1_ == eit.i1_
 				&& (i1_ == graph_->adjList_.size()
 				|| i2_ == eit.i2_);
-		}
-
-		// TODO: delete
-		size_type getI1() {
-			return i1_;
 		}
 		
     private:
@@ -554,8 +549,7 @@ public:
 		return edge_iterator(this, adjList_.size());
 	}
 
-	// TODO: change it back to private
-public:
+private:
     PointsType points_;
     EdgesType edges_;
     /** Adjacency list/set; each node has a set that consists of its adjacent nodes.

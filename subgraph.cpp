@@ -28,26 +28,36 @@ class filter_iterator
     : private equality_comparable<filter_iterator<Pred,It>> {
  public:
   // Get all of the iterator traits and make them our own
-  typedef typename std::iterator_traits<It>::value_type        value_type;
-  typedef typename std::iterator_traits<It>::pointer           pointer;
-  typedef typename std::iterator_traits<It>::reference         reference;
-  typedef typename std::iterator_traits<It>::difference_type   difference_type;
-  typedef typename std::input_iterator_tag                     iterator_category;
+  typedef typename std::iterator_traits<It>::value_type			value_type;
+  typedef typename std::iterator_traits<It>::pointer			pointer;
+  typedef typename std::iterator_traits<It>::reference			reference;
+  typedef typename std::iterator_traits<It>::difference_type	difference_type;
+  typedef typename std::input_iterator_tag						iterator_category;
 
   typedef filter_iterator<Pred,It> self_type;
 
   // Constructor
   filter_iterator(const Pred& p, const It& first, const It& last)
-      : p_(p), it_(first), end_(last) {
-    // HW1 #4: YOUR CODE HERE
+      : p_(p), it_(first), end_(last) {}
+
+  /** Dereference the iterator */
+  value_type operator*() const {
+	  return *it_;
   }
 
-  // HW1 #4: YOUR CODE HERE
-  // Supply definitions AND SPECIFICATIONS for:
-  // value_type operator*() const;
-  // self_type& operator++();
-  // bool operator==(const self_type&) const;
+  /** Advanced to the next position */
+  self_type& operator++() {
+	  do {
+		  ++it_;
+	  } while (it_ != end_ && !p_(*it_));
+	  return *this;
+  }
 
+  /** Test whether two iterators are pointing to the same position */
+  bool operator==(const self_type& rhs) const {
+	  return it_ == rhs.it_;
+  }
+  
  private:
   Pred p_;
   It it_;
@@ -67,10 +77,17 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
   return filter_iterator<Pred,Iter>(p, it, end);
 }
 
-// HW1 #4: YOUR CODE HERE
-// Specify and write an interesting predicate on the nodes.
-// Explain what your predicate is intended to do and test it.
-// If you'd like you may create new nodes and tets files.
+/** Return True iff the node has degree > @ta thred
+ *
+ *  A powerful node is a node with a lot of connections!
+ */
+template <unsigned thred>
+struct isPowerNode {
+	template <typename NODE>
+	bool operator()(const NODE& n) {
+		return n.degree() > thred;
+	}
+};
 
 /** Test predicate for HW1 #4 */
 struct SlicePredicate {
@@ -118,7 +135,16 @@ int main(int argc, char** argv)
   viewer.launch();
 
   // HW1 #4: YOUR CODE HERE
-  // Use the filter_iterator to plot an induced subgraph.
+  // Set the viewer
+  // viewer.draw_graph_nodes(graph);
+  auto node_map = viewer.empty_node_map(graph);
+  auto filter_pred = isPowerNode<15>();
+  auto filter_begin = make_filtered(graph.node_begin(), graph.node_end(), filter_pred);
+  auto filter_end = make_filtered(graph.node_end(), graph.node_end(), filter_pred);
+  viewer.add_nodes(filter_begin, filter_end, node_map);
+
+  //viewer.draw_graph(graph);
+  viewer.center_view();
 
   return 0;
 }

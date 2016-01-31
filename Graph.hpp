@@ -110,22 +110,22 @@ public:
         Node() {};
 
         /** Return this node's position. */
-		const Point& position() const {
-			return graph_->points_[index_];
-		}
+        const Point& position() const {
+            return graph_->points_[index_];
+        }
 
         /** Return this node's index, a number in the range [0, graph_size). */
         size_type index() const {
-			return index_;
-		}
+            return index_;
+        }
 
         /** Test whether this node and @a n are equal.
          *
          * Equal nodes have the same graph and the same index.
          */
         bool operator==(const Node& n) const {
-			return (graph_ == n.graph_ && index_ == n.index_);
-		}
+            return (graph_ == n.graph_ && index_ == n.index_);
+        }
 
         /** Test whether this node is less than @a n in a global order.
          *
@@ -135,35 +135,35 @@ public:
          * The node ordering relation must obey trichotomy: For any two nodes x
          * and y, exactly one of x == y, x < y, and y < x is true.
          */
-		bool operator<(const Node& n) const {
-			// Order is defined as dictionary order in (graph_, index_)
-			return (graph_ < n.graph_ || (graph_ == n.graph_ && index_ < n.index_));
-		}
+        bool operator<(const Node& n) const {
+            // Order is defined as dictionary order in (graph_, index_)
+            return (graph_ < n.graph_ || (graph_ == n.graph_ && index_ < n.index_));
+        }
 
         /** Return the value of the node */
-		node_value_type& value() {
-			return graph_->nValues_[index_];
-		}
+        node_value_type& value() {
+            return graph_->nValues_[index_];
+        }
 
         /** Return the value of the node, const version */
-		const node_value_type& value() const {
-			return graph_->nValues_[index_];
-		}
+        const node_value_type& value() const {
+            return graph_->nValues_[index_];
+        }
 
-		/** Return the degree of the node */
-		size_type degree() const {
-			return graph_->adjList_[index_].size();
-		}
+        /** Return the degree of the node */
+        size_type degree() const {
+            return graph_->adjList_[index_].size();
+        }
 
-		/** Return the beginning position of incident_iterator */
-		incident_iterator edge_begin() const {
-			return IncidentIterator(*this, graph_->adjList_[index_].begin());
-		}
+        /** Return the beginning position of incident_iterator */
+        incident_iterator edge_begin() const {
+            return IncidentIterator(*this, graph_->adjList_[index_].begin());
+        }
 
-		/** Return the end position of incident_iterator */
-		incident_iterator edge_end() const {
-			return IncidentIterator(*this, graph_->adjList_[index_].end());
-		}
+        /** Return the end position of incident_iterator */
+        incident_iterator edge_end() const {
+            return IncidentIterator(*this, graph_->adjList_[index_].end());
+        }
 
     private:
         // Allow Graph to access Node's private member data and functions.
@@ -171,7 +171,7 @@ public:
 
         /** Constructs a Node corresponding to given index and graph */
         Node(const Graph* graph, size_type index)
-			: index_(index), graph_(const_cast<Graph*>(graph)) {}
+            : index_(index), graph_(const_cast<Graph*>(graph)) {}
 
         // The element's index in the Graph container
         size_type index_;
@@ -196,43 +196,43 @@ public:
         Edge() {};
 
         /** Return a node of this Edge */
-		Node node1() const {
-			return Node(graph_, i1_);
-		}
+        Node node1() const {
+            return Node(graph_, i1_);
+        }
 
         /** Return the other node of this Edge */
-		Node node2() const {
-			return Node(graph_, i2_);
-		}
+        Node node2() const {
+            return Node(graph_, i2_);
+        }
 
         /** Test whether this edge and @a e are equal.
          *
          * Equal edges represent the same undirected edge between two nodes.
          */
-		bool operator==(const Edge& e) const {
-			return ((i1_ == e.i1_ && i2_ == e.i2_)
-					||  (i1_ == e.i2_ && i2_ == e.i1_))
-				&& graph_ == e.graph_;
-		}
+        bool operator==(const Edge& e) const {
+            return ((i1_ == e.i1_ && i2_ == e.i2_)
+                    ||  (i1_ == e.i2_ && i2_ == e.i1_))
+                && graph_ == e.graph_;
+        }
 
         /** Test whether this edge is less than @a e in a global order.
          *
          * This ordering function is useful for STL containers such as
          * std::map<>. It need not have any interpretive meaning.
          */
-		bool operator<(const Edge& e) const {
-			// Order is defined as dictionary order in (min(i1_, i2_), max(i1_, i2_))
-			auto m = std::min(i1_, i2_), me = std::min(e.i1_, e.i2_);
-			return (m < me || (m == me && std::max(i1_, i2_) < std::max(e.i1_, e.i2_)));
-		}
+        bool operator<(const Edge& e) const {
+            // Order is defined as dictionary order in (min(i1_, i2_), max(i1_, i2_))
+            auto m = std::min(i1_, i2_), me = std::min(e.i1_, e.i2_);
+            return (m < me || (m == me && std::max(i1_, i2_) < std::max(e.i1_, e.i2_)));
+        }
 
     private:
         // Allow Graph to access Edge's private member data and functions.
         friend class Graph;
 
         /** Constructs an edge given a graph pointer and two node indices*/
-		Edge(const Graph* graph, const size_type& i1, const size_type& i2)
-			: i1_(i1), i2_(i2), graph_(const_cast<Graph*>(graph)) {}
+        Edge(const Graph* graph, const size_type& i1, const size_type& i2)
+            : i1_(i1), i2_(i2), graph_(const_cast<Graph*>(graph)) {}
 
         // Indices of the two endpoints of the edge
         size_type i1_, i2_;
@@ -265,30 +265,30 @@ public:
         NodeIterator() {};
 
         /** Deference the iterator */
-		Node operator*() const {
-			return graph_->node(id_);
-		}
+        Node operator*() const {
+            return graph_->node(id_);
+        }
 
         /** Advance to next position and return the new position*/
-		node_iterator& operator++() {
-			++id_;
-			return *this;
-		}
+        node_iterator& operator++() {
+            ++id_;
+            return *this;
+        }
 
         /** Test whether two iterators are at the same position */
-		bool operator==(const node_iterator& rhs) const {
-			return id_ == rhs.id_ && graph_ == rhs.graph_;
-		}
+        bool operator==(const node_iterator& rhs) const {
+            return id_ == rhs.id_ && graph_ == rhs.graph_;
+        }
 
     private:
         friend class Graph;
 
-		/** Construct a NodeIterator with the index of the underlying Node */
-		NodeIterator(const Graph* graph, size_type id): id_(id), graph_(const_cast<Graph*>(graph)) {}
+        /** Construct a NodeIterator with the index of the underlying Node */
+        NodeIterator(const Graph* graph, size_type id): id_(id), graph_(const_cast<Graph*>(graph)) {}
 
-		// The index of Node it is pointing to
+        // The index of Node it is pointing to
         size_type id_;
-		// Pointer back to the Graph contrainer
+        // Pointer back to the Graph contrainer
         Graph *graph_;
     };
 
@@ -317,49 +317,49 @@ public:
         EdgeIterator() {};
 
         /** Deference the iterator */
-		Edge operator*() const {
-			return Edge(graph_, i1_, *i2_);
-		}
+        Edge operator*() const {
+            return Edge(graph_, i1_, *i2_);
+        }
 
         /** Avanced to next position */
-		edge_iterator& operator++() {
-			// To avoid duplication, we skip those with smaller second index
-			do {
-				++i2_;
-			} while (i2_ != graph_->adjList_[i1_].end() && *i2_ < i1_);
+        edge_iterator& operator++() {
+            // To avoid duplication, we skip those with smaller second index
+            do {
+                ++i2_;
+            } while (i2_ != graph_->adjList_[i1_].end() && *i2_ < i1_);
 
-			// Upon reaching the end of one node's adjacency list,
-			// we move to the next node with nonempty adjacency list.
-			while (i2_ == graph_->adjList_[i1_].end()) {
-				++i1_;
-				if (i1_ == graph_->adjList_.size()) break;
-				i2_ = graph_->adjList_[i1_].begin();
-			}
-			return *this;
-		}
+            // Upon reaching the end of one node's adjacency list,
+            // we move to the next node with nonempty adjacency list.
+            while (i2_ == graph_->adjList_[i1_].end()) {
+                ++i1_;
+                if (i1_ == graph_->adjList_.size()) break;
+                i2_ = graph_->adjList_[i1_].begin();
+            }
+            return *this;
+        }
 
         /** Test whether two EdgeIterators have the same position */
-		bool operator==(const edge_iterator& eit) const {
-			return i1_ == eit.i1_
-				&& (i1_ == graph_->adjList_.size()
-					|| i2_ == eit.i2_)
-				&& graph_ == eit.graph_;
-		}
+        bool operator==(const edge_iterator& eit) const {
+            return i1_ == eit.i1_
+                && (i1_ == graph_->adjList_.size()
+                    || i2_ == eit.i2_)
+                && graph_ == eit.graph_;
+        }
 
     private:
         friend class Graph;
         // The index of the smaller endpoint
         size_type i1_;
-		// Pointer back to the Graph contrainer
+        // Pointer back to the Graph contrainer
         Graph *graph_;
         // The set iterator at the other endpoint
         typename std::unordered_set<size_type>::iterator i2_;
 
         // Construct an EdgeIterator with one node, starting at the beginning of that
         // node's adjacency list
-		EdgeIterator(const Graph* graph, size_type i1): i1_(i1), graph_(const_cast<Graph*>(graph)) {
-			if (i1 < graph_->adjList_.size()) i2_ = graph_->adjList_[i1_].begin();
-		}
+        EdgeIterator(const Graph* graph, size_type i1): i1_(i1), graph_(const_cast<Graph*>(graph)) {
+            if (i1 < graph_->adjList_.size()) i2_ = graph_->adjList_[i1_].begin();
+        }
     };
 
 
@@ -386,39 +386,39 @@ public:
         /** Construct an invalid IncidentIterator. */
         IncidentIterator() {}
 
-		/** Deference the iterator */
-		Edge operator*() const {
-			return Edge(n_.graph_, n_.index(), *pos_);
-		}
+        /** Deference the iterator */
+        Edge operator*() const {
+            return Edge(n_.graph_, n_.index(), *pos_);
+        }
 
-		/** Return the other endpoint of the edge */
-		Node node2() const {
-			return *pos_;
-		}
+        /** Return the other endpoint of the edge */
+        Node node2() const {
+            return *pos_;
+        }
 
-		/** Advanced to next position */
-		incident_iterator& operator++() {
-			++pos_;
-			return *this;
-		}
+        /** Advanced to next position */
+        incident_iterator& operator++() {
+            ++pos_;
+            return *this;
+        }
 
-		/** Test whether two iterators are pointing to the same position */
-		bool operator==(const incident_iterator& iit) const {
-			return (pos_ == iit.pos_)
-				&& (n_ == iit.n_);
-		}
+        /** Test whether two iterators are pointing to the same position */
+        bool operator==(const incident_iterator& iit) const {
+            return (pos_ == iit.pos_)
+                && (n_ == iit.n_);
+        }
 
     private:
         friend class Node;
 
-		// The underlying Node
-		Node n_;
-		// Iterator at adjList_
-		std::unordered_set<size_type>::iterator pos_;
-		// Construct an incidentIterator with Node index and an iterator at that
-		// Node's adjacency list
-		IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos)
-			: n_(n), pos_(pos) {}
+        // The underlying Node
+        Node n_;
+        // Iterator at adjList_
+        std::unordered_set<size_type>::iterator pos_;
+        // Construct an incidentIterator with Node index and an iterator at that
+        // Node's adjacency list
+        IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos)
+            : n_(n), pos_(pos) {}
     };
 
 
@@ -446,7 +446,7 @@ public:
     Node add_node(const Point& position, const node_value_type& nValue = node_value_type()) {
         points_.push_back(position);
         nValues_.push_back(nValue);
-		adjList_.push_back(std::unordered_set<size_type>());
+        adjList_.push_back(std::unordered_set<size_type>());
         return Node(this, size()-1);
     }
 
@@ -473,11 +473,11 @@ public:
      *
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
-	size_type num_edges() const {
-		return nEdges_;
-	}
+    size_type num_edges() const {
+        return nEdges_;
+    }
 
-	// [[deprecated]]
+    // [[deprecated]]
     // size_type num_edges() const {
     //     return edges_.size();
     // }
@@ -487,9 +487,9 @@ public:
      *
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
-	// [[deprecated]]
+    // [[deprecated]]
     // Edge edge(size_type i) const {
-	// 	return edges_[i];
+    //  return edges_[i];
     // }
 
     /** Test whether two nodes are connected by an edge.
@@ -499,8 +499,8 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     bool has_edge(const Node& a, const Node& b) const {
-		size_type m = std::min(a.index(), b.index());
-		size_type M = std::max(a.index(), b.index());
+        size_type m = std::min(a.index(), b.index());
+        size_type M = std::max(a.index(), b.index());
         return (a.graph_ == b.graph_)
             && (a.graph_ == this)
             && adjList_[m].find(M) != adjList_[m].end();
@@ -519,12 +519,12 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     Edge add_edge(const Node& a, const Node& b) {
-		if (!has_edge(a, b)) {
-			++nEdges_;
-			adjList_[a.index()].insert(b.index());
-			adjList_[b.index()].insert(a.index());
+        if (!has_edge(a, b)) {
+            ++nEdges_;
+            adjList_[a.index()].insert(b.index());
+            adjList_[b.index()].insert(a.index());
         }
-		return Edge(this, a.index(), b.index());
+        return Edge(this, a.index(), b.index());
     }
 
     /** Remove all nodes and edges from this graph.
@@ -533,10 +533,10 @@ public:
      * Invalidates all outstanding Node and Edge objects.
      */
     void clear() {
-		nEdges_ = 0;
+        nEdges_ = 0;
         points_.clear();
         adjList_.clear();
-		nValues_.clear();
+        nValues_.clear();
     }
 
     /** Return an iterator pointing to the first node */
@@ -544,21 +544,21 @@ public:
         return node_iterator(this, 0);
     }
     /** Return an iterator pointing to the next position of the last node */
-	node_iterator node_end() const {
-		return node_iterator(this, points_.size());
-	}
+    node_iterator node_end() const {
+        return node_iterator(this, points_.size());
+    }
     /** Return an iterator pointing to the first edge */
-	edge_iterator edge_begin() const {
-		return edge_iterator(this, 0);
-	}
+    edge_iterator edge_begin() const {
+        return edge_iterator(this, 0);
+    }
     /** Return an iterator pointing to the next position of the last edge */
-	edge_iterator edge_end() const {
-		return edge_iterator(this, adjList_.size());
-	}
+    edge_iterator edge_end() const {
+        return edge_iterator(this, adjList_.size());
+    }
 
 private:
     PointsType points_;
-	size_type nEdges_ = 0;
+    size_type nEdges_ = 0;
     // EdgesType edges_; [[deprecated]]
     /** Adjacency list/set; each node has a set that consists of its adjacent nodes. */
     AdjListType adjList_;

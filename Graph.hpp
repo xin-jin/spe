@@ -152,18 +152,17 @@ public:
 
 		/** Return the degree of the node */
 		size_type degree() const {
-			return graph_->adjList_[index_].size()
-					  + graph_->adjListLower_[index_].size();
+			return graph_->adjList_[index_].size();
 		}
 
 		/** Return the beginning position of incident_iterator */
 		incident_iterator edge_begin() const {
-			return IncidentIterator(*this, graph_->adjList_[index_].begin(), false);
+			return IncidentIterator(*this, graph_->adjList_[index_].begin());
 		}
 
 		/** Return the end position of incident_iterator */
 		incident_iterator edge_end() const {
-			return IncidentIterator(*this, graph_->adjListLower_[index_].end(), true);
+			return IncidentIterator(*this, graph_->adjList_[index_].end());
 		}
 
     private:
@@ -324,7 +323,11 @@ public:
 
         /** Avanced to next position */
 		edge_iterator& operator++() {
-			++i2_;
+			// Skip those with smaller second index
+			do {
+				++i2_;
+			} while (i2_ != graph_->adjList_[i1_].end() && *i2_ < i1_);
+			
 			while (i2_ == graph_->adjList_[i1_].end()) {
 				++i1_;
 				if (i1_ == graph_->adjList_.size()) break;
@@ -393,17 +396,12 @@ public:
 		/** Advanced to next position */
 		incident_iterator& operator++() {
 			++pos_;
-			if (pos_ == n_.graph_->adjList_[n_.index()].end() && !inLower_) {
-				inLower_ = true;
-				pos_ = n_.graph_->adjListLower_[n_.index()].begin();
-			}
 			return *this;
 		}
 
 		/** Test whether two iterators are pointing to the same position */
 		bool operator==(const incident_iterator& iit) const {
 			return (pos_ == iit.pos_)
-				&& (inLower_ == iit.inLower_)
 				&& (n_ == iit.n_);
 		}
 
@@ -412,14 +410,12 @@ public:
 
 		// The underlying Node
 		Node n_;
-		// Indicate whether the position is in adjList or adjListLower
-		bool inLower_;
-		// Iterator at adjList_ or adjListLower_
+		// Iterator at adjList_
 		std::unordered_set<size_type>::iterator pos_;
 		// Construct an incidentIterator with Node index and an iterator at that
 		// Node's list
-		IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos, bool inLower)
-			: n_(n), pos_(pos), inLower_(inLower) {}
+		IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos)
+			: n_(n), pos_(pos) {}
     };
 
 
@@ -448,7 +444,6 @@ public:
         points_.push_back(position);
         nValues_.push_back(nValue);
 		adjList_.push_back(std::unordered_set<size_type>());
-		adjListLower_.push_back(std::unordered_set<size_type>());
         return Node(this, size()-1);
     }
 
@@ -523,14 +518,8 @@ public:
     Edge add_edge(const Node& a, const Node& b) {
 		if (!has_edge(a, b)) {
 			++nEdges_;
-            if (a.index() < b.index()) {
-				adjList_[a.index()].insert(b.index());
-				adjListLower_[b.index()].insert(a.index());
-			}
-			else {
-				adjList_[b.index()].insert(a.index());
-				adjListLower_[a.index()].insert(b.index());
-			}
+			adjList_[a.index()].insert(b.index());
+			adjList_[b.index()].insert(a.index());
         }
 		return Edge(this, a.index(), b.index());
     }
@@ -544,7 +533,6 @@ public:
 		nEdges_ = 0;
         points_.clear();
         adjList_.clear();
-		adjListLower_.clear();
 		nValues_.clear();
     }
 
@@ -569,11 +557,8 @@ private:
     PointsType points_;
 	size_type nEdges_ = 0;
     // EdgesType edges_; [[deprecated]]
-    /** Adjacency list/set; each node has a set that consists of its adjacent nodes.
-	 * adjList_[i] stores all adjacent nodes with indices larger than i
-	 * adjListLower_[i] stores all adjacent nodes with indices smaller than i
-	 */
-    AdjListType adjList_, adjListLower_;
+    /** Adjacency list/set; each node has a set that consists of its adjacent nodes. */
+    AdjListType adjList_;
     ValuesType nValues_;
 };
 

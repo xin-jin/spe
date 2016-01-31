@@ -10,6 +10,9 @@
 
 #include <vector>
 #include <fstream>
+#include <algorithm>
+#include <queue>
+#include <cassert>
 
 #include "CME212/SDLViewer.hpp"
 #include "CME212/Util.hpp"
@@ -27,8 +30,7 @@ struct MyComparator {
 
    template <typename NODE>
    bool operator()(const NODE& node1, const NODE& node2) const {
-    (void) node1; (void) node2;    // Quiet compiler warning
-    return false;
+    return node1.value() < node2.value();
   }
 };
 
@@ -49,10 +51,64 @@ struct MyComparator {
  * the root have value() -1.
  */
 int shortest_path_lengths(Graph<int>& g, const Point& point) {
-  // HW1 #4: YOUR CODE HERE
-  (void) g, (void) point;
-  return 0;
+	using size_type = typename Graph<int>::size_type;
+	using Node = typename Graph<int>::Node;
+
+	// TODO: delete
+	// auto i = g.node_begin();
+	// double minDis = norm((*i).position() - point);
+	// auto minDisNode = i;
+	// ++i;
+
+	// // Find the closest Node to point and initialize all values to -1
+	// for ( ; i != g.node_end(); ++i) {
+	// 	int dis = norm((*i).position() - point);
+	// 	if (dis < minDis) {
+	// 		minDis = dis;
+	// 		minDisNode = i;
+	// 	}
+	// 	(*i).value() = -1;
+	// }
+	// Find the closet Node to @a point
+	auto root_iter = std::min_element(g.node_begin(), g.node_end(), MyComparator(point));
+	// Initialize all values to be -1
+	for (auto i = g.node_begin(); i != g.node_end(); ++i)
+		(*i).value() = -1;
+	(*root_iter).value() = 0;
+	std::queue<Node> pQueue;
+	pQueue.push(*root_iter);
+	int maxLen;
+	
+	// Begin BFS
+	while (!pQueue.empty()) {
+		Node current = pQueue.front();
+		maxLen = current.value();
+		pQueue.pop();
+		for (auto i = current.edge_begin(); i != current.edge_end(); ++i) {
+			Node node2 = (*i).node2();
+			if (node2.value() == -1) {
+				node2.value() = current.value() + 1;
+				pQueue.push(node2);
+			}
+		}
+	}
+
+	return maxLen;
 }
+
+struct MyColorFunc {
+	using Node = Graph<int>::Node;
+	static int upper_bound;
+	CME212::Color operator()(const Node& n) {
+		// if (n.value() == -1)
+		// 	return CME212::Color(0);
+		// else
+		// 	return CME212::Color(n.value()*1.0/upper_bound);
+		return CME212::Color(.9);
+	}
+};
+
+int MyColorFunc::upper_bound = 0;
 
 
 
@@ -92,8 +148,13 @@ int main(int argc, char** argv)
   CME212::SDLViewer viewer;
   viewer.launch();
 
-  // HW1 #4: YOUR CODE HERE
-  // Use shortest_path_lengths to set the node values to the path lengths
-  // Construct a Color functor and view with the SDLViewer
+  MyColorFunc::upper_bound = shortest_path_lengths(graph, Point(-1, 0, 1));
+  auto node_map = viewer.empty_node_map(graph);
+  assert(false);
+  std::cout << graph.node(2).value() << std::endl;
+  viewer.add_nodes(graph.node_begin(), graph.node_end(), MyColorFunc(), node_map);
+
+  viewer.center_view();
+  
   return 0;
 }

@@ -57,7 +57,7 @@ class filter_iterator
   bool operator==(const self_type& rhs) const {
 	  return it_ == rhs.it_;
   }
-  
+
  private:
   Pred p_;
   It it_;
@@ -134,16 +134,13 @@ int main(int argc, char** argv)
   CME212::SDLViewer viewer;
   viewer.launch();
 
-  // HW1 #4: YOUR CODE HERE
   // Set the viewer
-  // viewer.draw_graph_nodes(graph);
   auto node_map = viewer.empty_node_map(graph);
-  auto filter_pred = isPowerNode<15>();
+  auto filter_pred = isPowerNode<16>();
   auto filter_begin = make_filtered(graph.node_begin(), graph.node_end(), filter_pred);
   auto filter_end = make_filtered(graph.node_end(), graph.node_end(), filter_pred);
   viewer.add_nodes(filter_begin, filter_end, node_map);
 
-  //viewer.draw_graph(graph);
   viewer.center_view();
 
   return 0;

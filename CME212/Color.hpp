@@ -1,6 +1,8 @@
 #ifndef CME212_COLOR_HPP
 #define CME212_COLOR_HPP
 
+#include <cassert>
+
 namespace CME212 {
 
 /** @file Color.hpp

@@ -76,7 +76,7 @@ public:
     //
 
     /** Construct an empty graph. */
-    Graph(): points_({}), edges_({}) {}
+    Graph() {}
 
     /** Default destructor */
     ~Graph() = default;
@@ -158,12 +158,12 @@ public:
 
 		/** Return the beginning position of incident_iterator */
 		incident_iterator edge_begin() const {
-			return IncidentIterator(this, graph_->adjList[index_].begin());
+			return IncidentIterator(*this, graph_->adjList_[index_].begin(), false);
 		}
 
 		/** Return the end position of incident_iterator */
 		incident_iterator edge_end() const {
-			return incident_iterator(this, graph_->adjListLower[index_].end());
+			return IncidentIterator(*this, graph_->adjListLower_[index_].end(), true);
 		}
 
     private:
@@ -335,12 +335,12 @@ public:
 
         /** Test whether two EdgeIterators have the same position */
 		bool operator==(const edge_iterator& eit) const {
-			return graph_ == eit.graph_
-				&& i1_ == eit.i1_
+			return i1_ == eit.i1_
 				&& (i1_ == graph_->adjList_.size()
-				|| i2_ == eit.i2_);
+					|| i2_ == eit.i2_)
+				&& graph_ == eit.graph_;
 		}
-		
+
     private:
         friend class Graph;
         // The index of the smaller endpoint
@@ -382,34 +382,44 @@ public:
 
 		/** Deference the iterator */
 		Edge operator*() const {
-			return Edge(n_->graph_, n_->index(), *pos_);
+			return Edge(n_.graph_, n_.index(), *pos_);
+		}
+
+		/** Return the other endpoint of the edge */
+		Node node2() const {
+			return *pos_;
 		}
 
 		/** Advanced to next position */
 		incident_iterator& operator++() {
 			++pos_;
-			if (pos_ == n_->graph_->adjList_[n_->index()].end())
-				pos_ = n_->graph_->adjListLower_[n_->index()].begin();
+			if (pos_ == n_.graph_->adjList_[n_.index()].end() && !inLower_) {
+				inLower_ = true;
+				pos_ = n_.graph_->adjListLower_[n_.index()].begin();
+			}
 			return *this;
 		}
 
 		/** Test whether two iterators are pointing to the same position */
 		bool operator==(const incident_iterator& iit) const {
-			return (n_ == iit.n_)
-				&& (pos_ == iit.pos_);
+			return (pos_ == iit.pos_)
+				&& (inLower_ == iit.inLower_)
+				&& (n_ == iit.n_);
 		}
 
     private:
         friend class Node;
 
-		// Pointer to the underlying Node
-		Node *n_;
+		// The underlying Node
+		Node n_;
+		// Indicate whether the position is in adjList or adjListLower
+		bool inLower_;
 		// Iterator at adjList_ or adjListLower_
 		std::unordered_set<size_type>::iterator pos_;
 		// Construct an incidentIterator with Node index and an iterator at that
 		// Node's list
-		IncidentIterator(const Node* n, std::unordered_set<size_type>::iterator pos)
-			: n_(const_cast<Node*>(n)), pos_(pos) {}
+		IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos, bool inLower)
+			: n_(n), pos_(pos), inLower_(inLower) {}
     };
 
 
@@ -465,18 +475,24 @@ public:
      *
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
-    size_type num_edges() const {
-        return edges_.size();
-    }
+	size_type num_edges() const {
+		return nEdges_;
+	}
+
+	// [[deprecated]]
+    // size_type num_edges() const {
+    //     return edges_.size();
+    // }
 
     /** Return the edge with index @a i.
      * @pre 0 <= @a i < num_edges()
      *
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
-    Edge edge(size_type i) const {
-		return edges_[i];
-    }
+	// [[deprecated]]
+    // Edge edge(size_type i) const {
+	// 	return edges_[i];
+    // }
 
     /** Test whether two nodes are connected by an edge.
      * @pre @a a and @a b are valid nodes of this graph
@@ -505,20 +521,18 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     Edge add_edge(const Node& a, const Node& b) {
-		if (has_edge(a, b))
-            return Edge(this, a.index(), b.index());
-        else {
-			edges_.push_back(Edge(this, a.index(), b.index()));
+		if (!has_edge(a, b)) {
+			++nEdges_;
             if (a.index() < b.index()) {
 				adjList_[a.index()].insert(b.index());
 				adjListLower_[b.index()].insert(a.index());
-			} 
+			}
 			else {
 				adjList_[b.index()].insert(a.index());
 				adjListLower_[a.index()].insert(b.index());
 			}
-            return edges_[num_edges()-1];
         }
+		return Edge(this, a.index(), b.index());
     }
 
     /** Remove all nodes and edges from this graph.
@@ -527,9 +541,11 @@ public:
      * Invalidates all outstanding Node and Edge objects.
      */
     void clear() {
+		nEdges_ = 0;
         points_.clear();
-        edges_.clear();
         adjList_.clear();
+		adjListLower_.clear();
+		nValues_.clear();
     }
 
     /** Return an iterator pointing to the first node */
@@ -551,7 +567,8 @@ public:
 
 private:
     PointsType points_;
-    EdgesType edges_;
+	size_type nEdges_ = 0;
+    // EdgesType edges_; [[deprecated]]
     /** Adjacency list/set; each node has a set that consists of its adjacent nodes.
 	 * adjList_[i] stores all adjacent nodes with indices larger than i
 	 * adjListLower_[i] stores all adjacent nodes with indices smaller than i

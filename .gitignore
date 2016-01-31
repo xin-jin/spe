@@ -4,3 +4,5 @@
 GTAGS
 GRTAGS
 GPATH
+*.o viewer subgraph shortest_path
+.deps

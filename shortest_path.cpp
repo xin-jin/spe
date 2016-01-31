@@ -24,15 +24,15 @@
 /** Comparator that compares the distance from a given point p.
  */
 struct MyComparator {
-   Point p_;
-   MyComparator(const Point& p) : p_(p) {
-   };
+    Point p_;
+    MyComparator(const Point& p) : p_(p) {
+    };
 
-   template <typename NODE>
-   bool operator()(const NODE& node1, const NODE& node2) const {
-	   auto d1 = norm(node1.position() - p_), d2 = norm(node2.position() - p_);
-    return d1 < d2;
-  }
+    template <typename NODE>
+    bool operator()(const NODE& node1, const NODE& node2) const {
+        auto d1 = norm(node1.position() - p_), d2 = norm(node2.position() - p_);
+        return d1 < d2;
+    }
 };
 
 
@@ -52,47 +52,47 @@ struct MyComparator {
  * the root have value() -1.
  */
 int shortest_path_lengths(Graph<int>& g, const Point& point) {
-	using size_type = typename Graph<int>::size_type;
-	using Node = typename Graph<int>::Node;
+    using size_type = typename Graph<int>::size_type;
+    using Node = typename Graph<int>::Node;
 
-	// Find the closet Node to @a point
-	auto root_iter = std::min_element(g.node_begin(), g.node_end(), MyComparator(point));
-	// Initialize all values to be -1
-	for (auto i = g.node_begin(); i != g.node_end(); ++i)
-		(*i).value() = -1;
-	(*root_iter).value() = 0;
-	std::queue<Node> pQueue;
-	pQueue.push(*root_iter);
-	int maxLen;
+    // Find the closet Node to @a point
+    auto root_iter = std::min_element(g.node_begin(), g.node_end(), MyComparator(point));
+    // Initialize all values to be -1
+    for (auto i = g.node_begin(); i != g.node_end(); ++i)
+        (*i).value() = -1;
+    (*root_iter).value() = 0;
+    std::queue<Node> pQueue;
+    pQueue.push(*root_iter);
+    int maxLen;
 
-	// Begin BFS
-	while (!pQueue.empty()) {
-		Node current = pQueue.front();
-		maxLen = current.value();
-		pQueue.pop();
-		for (auto i = current.edge_begin(); i != current.edge_end(); ++i) {
-			Node node2 = (*i).node2();
-			if (node2.value() == -1) {
-				node2.value() = current.value() + 1;
-				pQueue.push(node2);
-			}
-		}
-	}
+    // Begin BFS
+    while (!pQueue.empty()) {
+        Node current = pQueue.front();
+        maxLen = current.value();
+        pQueue.pop();
+        for (auto i = current.edge_begin(); i != current.edge_end(); ++i) {
+            Node node2 = (*i).node2();
+            if (node2.value() == -1) {
+                node2.value() = current.value() + 1;
+                pQueue.push(node2);
+            }
+        }
+    }
 
-	return maxLen;
+    return maxLen;
 }
 
 struct MyColorFunc {
-	using Node = Graph<int>::Node;
-	static int max;
-	CME212::Color operator()(const Node& n) {
-		if (n.value() == -1)
-			return CME212::Color(0);
-		else {
-			float r = n.value()*1.0f/max;
-			return CME212::Color::make_heat(r);
-		}
-	}
+    using Node = Graph<int>::Node;
+    static int max;
+    CME212::Color operator()(const Node& n) {
+        if (n.value() == -1)
+            return CME212::Color(0);
+        else {
+            float r = n.value()*1.0f/max;
+            return CME212::Color::make_heat(r);
+        }
+    }
 };
 
 int MyColorFunc::max = 0;
@@ -101,45 +101,46 @@ int MyColorFunc::max = 0;
 
 int main(int argc, char** argv)
 {
-  // Check arguments
-  if (argc < 3) {
-    std::cerr << "Usage: " << argv[0] << " NODES_FILE TETS_FILE\n";
-    exit(1);
-  }
+    // Check arguments
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " NODES_FILE TETS_FILE\n";
+        exit(1);
+    }
 
-  // Construct a Graph
-  typedef Graph<int> GraphType;
-  GraphType graph;
-  std::vector<GraphType::node_type> nodes;
+    // Construct a Graph
+    typedef Graph<int> GraphType;
+    GraphType graph;
+    std::vector<GraphType::node_type> nodes;
 
-  // Create a nodes_file from the first input argument
-  std::ifstream nodes_file(argv[1]);
-  // Interpret each line of the nodes_file as a 3D Point and add to the Graph
-  Point p;
-  while (CME212::getline_parsed(nodes_file, p))
-    nodes.push_back(graph.add_node(p));
+    // Create a nodes_file from the first input argument
+    std::ifstream nodes_file(argv[1]);
+    // Interpret each line of the nodes_file as a 3D Point and add to the Graph
+    Point p;
+    while (CME212::getline_parsed(nodes_file, p))
+        nodes.push_back(graph.add_node(p));
 
-  // Create a tets_file from the second input argument
-  std::ifstream tets_file(argv[2]);
-  // Interpret each line of the tets_file as four ints which refer to nodes
-  std::array<int,4> t;
-  while (CME212::getline_parsed(tets_file, t))
-    for (unsigned i = 1; i < t.size(); ++i)
-      for (unsigned j = 0; j < i; ++j)
-        graph.add_edge(nodes[t[i]], nodes[t[j]]);
+    // Create a tets_file from the second input argument
+    std::ifstream tets_file(argv[2]);
+    // Interpret each line of the tets_file as four ints which refer to nodes
+    std::array<int,4> t;
+    while (CME212::getline_parsed(tets_file, t))
+        for (unsigned i = 1; i < t.size(); ++i)
+            for (unsigned j = 0; j < i; ++j)
+                graph.add_edge(nodes[t[i]], nodes[t[j]]);
 
-  // Print out the stats
-  std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
+    // Print out the stats
+    std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
 
-  // Launch the SDLViewer
-  CME212::SDLViewer viewer;
-  viewer.launch();
+    // Launch the SDLViewer
+    CME212::SDLViewer viewer;
+    viewer.launch();
 
-  MyColorFunc::max = shortest_path_lengths(graph, Point(-1, 0, 1));
-  auto node_map = viewer.empty_node_map(graph);
-  viewer.add_nodes(graph.node_begin(), graph.node_end(), MyColorFunc(), node_map);
+    // Set the viewer
+    MyColorFunc::max = shortest_path_lengths(graph, Point(-1, 0, 1));
+    auto node_map = viewer.empty_node_map(graph);
+    viewer.add_nodes(graph.node_begin(), graph.node_end(), MyColorFunc(), node_map);
 
-  viewer.center_view();
+    viewer.center_view();
 
-  return 0;
+    return 0;
 }

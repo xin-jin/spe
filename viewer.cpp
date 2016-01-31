@@ -60,6 +60,8 @@ int main(int argc, char** argv)
   // Set the viewer
   auto node_map = viewer.empty_node_map(graph);
   viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
+  // Pause the viewer
+  std::cin.ignore();
   viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
 
   viewer.center_view();

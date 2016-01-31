@@ -234,7 +234,7 @@ public:
 		Edge(const Graph* graph, const size_type& i1, const size_type& i2)
 			: i1_(i1), i2_(i2), graph_(const_cast<Graph*>(graph)) {}
 
-        // Two nodes of the edge
+        // Indices of the two endpoints of the edge
         size_type i1_, i2_;
         // Pointer back to the Graph contrainer
         Graph *graph_;
@@ -323,11 +323,13 @@ public:
 
         /** Avanced to next position */
 		edge_iterator& operator++() {
-			// Skip those with smaller second index
+			// To avoid duplication, we skip those with smaller second index
 			do {
 				++i2_;
 			} while (i2_ != graph_->adjList_[i1_].end() && *i2_ < i1_);
-			
+
+			// Upon reaching the end of one node's adjacency list,
+			// we move to the next node with nonempty adjacency list.
 			while (i2_ == graph_->adjList_[i1_].end()) {
 				++i1_;
 				if (i1_ == graph_->adjList_.size()) break;
@@ -353,7 +355,8 @@ public:
         // The set iterator at the other endpoint
         typename std::unordered_set<size_type>::iterator i2_;
 
-        // Construct an EdgeIterator with one endpoint
+        // Construct an EdgeIterator with one node, starting at the beginning of that
+        // node's adjacency list
 		EdgeIterator(const Graph* graph, size_type i1): i1_(i1), graph_(const_cast<Graph*>(graph)) {
 			if (i1 < graph_->adjList_.size()) i2_ = graph_->adjList_[i1_].begin();
 		}
@@ -413,7 +416,7 @@ public:
 		// Iterator at adjList_
 		std::unordered_set<size_type>::iterator pos_;
 		// Construct an incidentIterator with Node index and an iterator at that
-		// Node's list
+		// Node's adjacency list
 		IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos)
 			: n_(n), pos_(pos) {}
     };

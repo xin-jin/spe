@@ -82,6 +82,7 @@ int shortest_path_lengths(Graph<int>& g, const Point& point) {
     return maxLen;
 }
 
+/** Customized color functor */
 struct MyColorFunc {
     using Node = Graph<int>::Node;
     static int max;

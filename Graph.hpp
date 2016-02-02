@@ -323,20 +323,25 @@ public:
 
         /** Avanced to next position */
         edge_iterator& operator++() {
-            // To avoid duplication, we skip those with smaller second index
-            do {
-                ++i2_;
-            } while (i2_ != graph_->adjList_[i1_].end() && *i2_ < i1_);
-
-            // Upon reaching the end of one node's adjacency list,
-            // we move to the next node with nonempty adjacency list.
-            while (i2_ == graph_->adjList_[i1_].end()) {
-                ++i1_;
-                if (i1_ == graph_->adjList_.size()) break;
-                i2_ = graph_->adjList_[i1_].begin();
-            }
+			++i2_;
+			fix();
             return *this;
         }
+
+		/** Fix the internal data when they do not satisfy the representation
+		 * invariant; to avoid duplication, we skip those with smaller second index
+		 */
+		void fix() {
+			while (i1_ < graph_->adjList_.size()) {
+				while (i2_ != graph_->adjList_[i1_].end()) {
+					while (i1_ < *i2_)
+						return;
+					++i2_;
+				}
+				++i1_;
+				i2_ = graph_->adjList_[i1_].begin();
+			}
+		}
 
         /** Test whether two EdgeIterators have the same position */
         bool operator==(const edge_iterator& eit) const {

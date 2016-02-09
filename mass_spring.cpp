@@ -28,8 +28,9 @@ struct NodeData {
   double mass;     //< Node mass
 };
 
-// HW2 #1 YOUR CODE HERE
-// Define your Graph type
+static constexpr int K = 100;
+static constexpr double L = .1;
+
 typedef Graph<NodeData> GraphType;
 typedef typename GraphType::node_type Node;
 typedef typename GraphType::edge_type Edge;
@@ -80,11 +81,33 @@ struct Problem1Force {
    * model that by returning a zero-valued force. */
   template <typename NODE>
   Point operator()(NODE n, double t) {
-    // HW2 #1: YOUR CODE HERE
-    (void) n; (void) t;     // silence compiler warnings
-    return Point();
+	  Point xi = n.position();
+	  (void) t;
+	  if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
+		  return Point(0, 0, 0);
+	  
+	  Point fSpring(0);
+	  for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
+		  Point xj = j.node2().position();
+		  Point xDiff = xi - xj;
+		  Point xDiffAbs = abs(xDiff);
+		  fSpring += xDiff/xDiffAbs*(xDiffAbs - L);
+	  }
+	  fSpring *= -K;
+
+	  Point fGrav(0, 0, grav);
+	  fGrav *= n.value().mass;
+	  	  return fSpring + fGrav;
   }
 };
+
+// Set initial conditions for nodes
+void initNodes(GraphType& g) {
+	for (auto n : nodesRange(g)) {
+		n.value().vel = Point(0);
+		n.value().mass = g.num_nodes();		
+	}
+}
 
 
 int main(int argc, char** argv) {
@@ -121,8 +144,8 @@ int main(int argc, char** argv) {
     graph.add_edge(nodes[t[2]], nodes[t[3]]);
   }
 
-  // HW2 #1 YOUR CODE HERE
-  // Set initial conditions for your nodes, if necessary.
+  // Set initial conditions for nodes
+  initNodes(graph);
 
   // Print out the stats
   std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;

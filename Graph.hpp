@@ -20,7 +20,7 @@
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
-template <typename V>
+template <typename V, typename E>
 class Graph {
 private:
     // Internal data members are declared at the end
@@ -31,6 +31,7 @@ public:
     //
 
     typedef V node_value_type;
+	typedef E edge_value_type;
 
     /** Type of this graph. */
     typedef Graph graph_type;
@@ -69,7 +70,7 @@ public:
     using PointsType = std::vector<Point>;
     using EdgesType = std::vector<Edge>;
     using AdjListType = std::vector<std::unordered_set<size_type>>;
-    using ValuesType = std::vector<node_value_type>;
+    using NodeValuesType = std::vector<node_value_type>;
 
     //
     // CONSTRUCTORS AND DESTRUCTOR
@@ -113,6 +114,10 @@ public:
         const Point& position() const {
             return graph_->points_[index_];
         }
+
+		Point& position() {
+			return graph_->points_[index_];
+		}
 
         /** Return this node's index, a number in the range [0, graph_size). */
         size_type index() const {
@@ -225,6 +230,11 @@ public:
             auto m = std::min(i1_, i2_), me = std::min(e.i1_, e.i2_);
             return (m < me || (m == me && std::max(i1_, i2_) < std::max(e.i1_, e.i2_)));
         }
+
+		/** Return the length of the edge */
+		double length() {
+			return norm(graph_->node(i1_).position(), graph_->node(i2_).position());
+		}
 
     private:
         // Allow Graph to access Edge's private member data and functions.
@@ -364,6 +374,7 @@ public:
         // node's adjacency list
         EdgeIterator(const Graph* graph, size_type i1): i1_(i1), graph_(const_cast<Graph*>(graph)) {
             if (i1 < graph_->adjList_.size()) i2_ = graph_->adjList_[i1_].begin();
+			fix();
         }
     };
 
@@ -395,10 +406,10 @@ public:
         Edge operator*() const {
             return Edge(n_.graph_, n_.index(), *pos_);
         }
-
+		
         /** Return the other endpoint of the edge */
         Node node2() const {
-            return *pos_;
+            return n_.graph_->node(*pos_);
         }
 
         /** Advanced to next position */
@@ -420,7 +431,7 @@ public:
         Node n_;
         // Iterator at adjList_
         std::unordered_set<size_type>::iterator pos_;
-        // Construct an incidentIterator with Node index and an iterator at that
+        // Construct an IncidentIterator with Node index and an iterator at that
         // Node's adjacency list
         IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos)
             : n_(n), pos_(pos) {}
@@ -567,7 +578,26 @@ private:
     // EdgesType edges_; [[deprecated]]
     /** Adjacency list/set; each node has a set that consists of its adjacent nodes. */
     AdjListType adjList_;
-    ValuesType nValues_;
+    NodeValuesType nValues_;
 };
+
+
+template <typename Graph>
+struct NodesRange {
+	typename Graph::node_iterator begin() {
+		return g.node_begin();
+	}
+	typename Graph::node_iterator end() {
+		return g.node_end();
+	}
+	Graph& g;
+};
+
+
+template <typename Graph>
+NodesRange<Graph> nodesRange(Graph& g) {
+	return {g};
+}
+
 
 #endif // CME212_GRAPH_HPP

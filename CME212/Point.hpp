@@ -230,6 +230,11 @@ double norm_inf(const Point& a) {
   return v;
 }
 
+/** Return the absolute value of a Point */
+Point abs(const Point& a) {
+	return Point(std::abs(a.x), std::abs(a.y), std::abs(a.z));
+}
+
 #undef for_i
 
 #endif

@@ -36,9 +36,18 @@ class filter_iterator
 
   typedef filter_iterator<Pred,It> self_type;
 
+  // Move to the next position that satisfies the predicate
+  void fix() {
+	  while (it_ != end_ && !p_(*it_)) {
+		  ++it_;
+	  }
+  }
+  
   // Constructor
   filter_iterator(const Pred& p, const It& first, const It& last)
-      : p_(p), it_(first), end_(last) {}
+      : p_(p), it_(first), end_(last) {
+	  fix();
+  }
 
   /** Dereference the iterator */
   value_type operator*() const {
@@ -47,9 +56,8 @@ class filter_iterator
 
   /** Advanced to the next position */
   self_type& operator++() {
-	  do {
-		  ++it_;
-	  } while (it_ != end_ && !p_(*it_));
+	  ++it_;
+	  fix();
 	  return *this;
   }
 

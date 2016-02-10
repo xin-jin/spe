@@ -20,7 +20,7 @@
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
-template <typename V, typename E>
+template <typename V>
 class Graph {
 private:
     // Internal data members are declared at the end
@@ -31,7 +31,6 @@ public:
     //
 
     typedef V node_value_type;
-	typedef E edge_value_type;
 
     /** Type of this graph. */
     typedef Graph graph_type;
@@ -233,7 +232,7 @@ public:
 
 		/** Return the length of the edge */
 		double length() {
-			return norm(graph_->node(i1_).position(), graph_->node(i2_).position());
+			return norm(graph_->node(i1_).position() - graph_->node(i2_).position());
 		}
 
     private:

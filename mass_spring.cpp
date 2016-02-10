@@ -28,8 +28,7 @@ struct NodeData {
   double mass;     //< Node mass
 };
 
-static constexpr int K = 100;
-static constexpr double L = .1;
+static constexpr double K = 100.0;
 
 typedef Graph<NodeData> GraphType;
 typedef typename GraphType::node_type Node;
@@ -90,24 +89,28 @@ struct Problem1Force {
 	  for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
 		  Point xj = j.node2().position();
 		  Point xDiff = xi - xj;
-		  Point xDiffAbs = abs(xDiff);
-		  fSpring += xDiff/xDiffAbs*(xDiffAbs - L);
+		  double xDiffLen = norm(xDiff);
+		  fSpring += xDiff/xDiffLen*(xDiffLen - L);
 	  }
 	  fSpring *= -K;
 
-	  Point fGrav(0, 0, grav);
+	  Point fGrav(0, 0, -grav);
 	  fGrav *= n.value().mass;
-	  	  return fSpring + fGrav;
+	  return fSpring + fGrav;
   }
+	static double L;
 };
 
 // Set initial conditions for nodes
 void initNodes(GraphType& g) {
+	double m = 1.0/g.num_nodes();
 	for (auto n : nodesRange(g)) {
 		n.value().vel = Point(0);
-		n.value().mass = g.num_nodes();		
+		n.value().mass = m;
 	}
 }
+
+double Problem1Force::L;
 
 
 int main(int argc, char** argv) {
@@ -146,6 +149,7 @@ int main(int argc, char** argv) {
 
   // Set initial conditions for nodes
   initNodes(graph);
+  Problem1Force::L = (*(graph.edge_begin())).length();
 
   // Print out the stats
   std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;

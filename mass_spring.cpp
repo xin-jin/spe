@@ -26,14 +26,14 @@ static constexpr double grav = 9.81;
 
 /** Custom structure of data to store with Nodes */
 struct NodeData {
-    Point vel;					//< Node velocity
-    double mass;				//< Node mass
+    Point vel;                  //< Node velocity
+    double mass;                //< Node mass
 };
 
 /** Custom structure of data to store with Edges */
 struct EdgeData {
-	double K;					// Spring constant
-	double L;					// Spring rest length
+    double K;                   // Spring constant
+    double L;                   // Spring rest length
 };
 
 static constexpr double K = 100.0;
@@ -100,7 +100,7 @@ struct Problem1Force {
             Point xj = j.node2().position();
             Point xDiff = xi - xj;
             double xDiffLen = norm(xDiff);
-			EdgeData eValue = (*j).value();
+            EdgeData eValue = (*j).value();
             fSpring -= eValue.K*xDiff/xDiffLen*(xDiffLen - eValue.L);
         }
 
@@ -122,16 +122,17 @@ void initNodes(GraphType& g) {
 
 /** Initialize EdgeData */
 void initEdges(GraphType& g) {
-	for (auto e : edgesRange(g)) {
-		e.value().K = K;
-		e.value().L = e.length();
-	}
+    for (auto e : edgesRange(g)) {
+        e.value().K = K;
+        e.value().L = e.length();
+    }
 }
 
+/** Force due to mass spring */
 struct MassSpringForce {
-	template <typename Node>
-	Point operator()(Node n, double t) {
-		Point xi = n.position();
+    template <typename Node>
+    Point operator()(Node n, double t) {
+        Point &xi = n.position();
         (void) t;
         if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
             return Point(0, 0, 0);
@@ -141,76 +142,106 @@ struct MassSpringForce {
             Point xj = j.node2().position();
             Point xDiff = xi - xj;
             double xDiffLen = norm(xDiff);
-			EdgeData eValue = (*j).value();
+            EdgeData eValue = (*j).value();
             fSpring -= eValue.K*xDiff/xDiffLen*(xDiffLen - eValue.L);
         }
 
-		return fSpring;
-	}
+        return fSpring;
+    }
 };
 
+/** Force due to gravity */
 struct GravityForce {
-	template <typename Node>
-	Point operator()(Node n, double t) {
-		Point xi = n.position();
-		(void) t;
-		if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
-			return Point(0, 0, 0);
-		Point fGrav(0, 0, -grav);
+    template <typename Node>
+    Point operator()(Node n, double t) {
+        Point &xi = n.position();
+        (void) t;
+        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
+            return Point(0, 0, 0);
+        Point fGrav(0, 0, -grav);
         return fGrav * n.value().mass;
-	}
+    }
 };
 
+/** Damping force */
 struct DampingForce {
-	template <typename Node>
-	Point operator()(Node n, double t) {
-		Point xi = n.position();
-		(void) t;
-		if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
-			return Point(0, 0, 0);
-		return -c * n.value().vel;
-	}
+    template <typename Node>
+    Point operator()(Node n, double t) {
+        Point &xi = n.position();
+        (void) t;
+        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
+            return Point(0, 0, 0);
+        return -c * n.value().vel;
+    }
 
-	static double c;
+    static double c;
 };
 
+/** Fixes a certain node to a specified position */
 class FixNodeConstraint {
 public:
-	FixNodeConstraint() = delete;
-	FixNodeConstraint(const Node&& n, const Point&& pt): id_(n.index()), pt_(pt) {}
-	FixNodeConstraint(int id, const Point& pt): id_(id), pt_(pt) {}
-	
-	template <typename Graph>
-	Point operator()(Graph& graph, double t) {
-		(void) t;
-		graph.node(id_).position() = pt_;
-	}
-	
+    FixNodeConstraint() {};
+    FixNodeConstraint(const Node&& n, const Point&& pt): id_(n.index()), pt_(pt) {}
+    FixNodeConstraint(int id, const Point& pt): id_(id), pt_(pt) {}
+
+    template <typename Graph>
+    Point operator()(Graph& graph, double t) {
+        (void) t;
+        graph.node(id_).position() = pt_;
+    }
+
 private:
-	size_type id_;
-	Point pt_;
+    size_type id_ = 0;
+    Point pt_ = Point(0, 0, 0);
 };
 
+/** An invisible wall */
 class PlaneConstraint {
 public:
-	PlaneConstraint() {}
-	PlaneConstraint(double z, const Point&& pt): z_(z), pt_(pt) {}
+    PlaneConstraint() {}
+    PlaneConstraint(double z, const Point&& pt): z_(z), pt_(pt) {}
+
+    template <typename Graph>
+    void operator()(Graph& graph, double t) {
+        (void) t;
+        for (Node n : nodesRange(graph)) {
+            Point &xi = n.position();
+            if (dot(xi, pt_) < z_) {
+                xi.z = z_;
+                n.value().vel.z = 0;
+            }
+        }
+    }
+
+private:
+    double z_ = -0.75;
+    Point pt_ = Point(0, 0, 1);
+};
+
+/** An invisible sphere */
+class SphereConstraint {
+public:
+	SphereConstraint() {}
+	SphereConstraint(const Point& c, double r): c_(c), r_(r) {}
 
 	template <typename Graph>
-	Point operator()(Graph& graph, double t) {
+	void operator()(Graph& graph, double t) {
 		(void) t;
 		for (Node n : nodesRange(graph)) {
 			Point xi = n.position();
-			if (dot(xi, pt_) < z_) {
-				xi.z = z_;
-				n.value().vel.z = 0;
+			double dis = norm(xi - c_);
+			if (dis < r_) {
+				Point R = (xi-c_)/dis;
+				Point &v = n.value().vel;
+				xi = R*r_ + c_;
+				v = v - dot(v, R)*R;
 			}
 		}
 	}
-										
+
 private:
-	double z_ = -0.75;
-	Point pt_ = Point(0, 0, 1);
+	Point c_ = Point(.5, .5, -.5);
+	double r_ = .15;	
 };
 
 double Problem1Force::L;
@@ -242,7 +273,7 @@ int main(int argc, char** argv) {
     while (CME212::getline_parsed(tets_file, t)) {
         graph.add_edge(nodes[t[0]], nodes[t[1]]);
         graph.add_edge(nodes[t[0]], nodes[t[2]]);
-		// Diagonal edges
+        // Diagonal edges
         graph.add_edge(nodes[t[0]], nodes[t[3]]);
         graph.add_edge(nodes[t[1]], nodes[t[2]]);
 
@@ -252,9 +283,9 @@ int main(int argc, char** argv) {
 
     // Set initial conditions
     initNodes(graph);
-	initEdges(graph);
+    initEdges(graph);
     Problem1Force::L = (*(graph.edge_begin())).length();
-	DampingForce::c = 1.0/graph.num_nodes();
+    DampingForce::c = 1.0/graph.num_nodes();
 
     // Print out the stats
     std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
@@ -274,16 +305,20 @@ int main(int argc, char** argv) {
     double t_start = 0;
     double t_end = 5.0;
 
+	auto customConstraint = makeCombinedConstraint(PlaneConstraint(), SphereConstraint());
+
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, make_combined_force(GravityForce(), MassSpringForce(), DampingForce()));
+        symp_euler_step(graph, t, dt, makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce()));
+        customConstraint(graph, t);
+
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
         viewer.set_label(t);
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
-		if (graph.size() < 100)
+        if (graph.size() < 100)
             CME212::sleep(0.001);
     }
 

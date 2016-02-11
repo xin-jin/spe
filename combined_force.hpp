@@ -4,7 +4,7 @@
 #include <utility>
 #include "CME212/Point.hpp"
 
-
+// TODO: full specification
 template <typename F1, typename ...Fn>
 class CombinedForce {
 public:

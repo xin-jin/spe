@@ -19,7 +19,7 @@ ifeq ($(UNAME), Linux)
   CXX := clang++-3.5
 endif
 ifeq ($(UNAME), Darwin)
-  CXX := clang++
+  CXX := clang++-3.5
 endif
 
 # Dependency directory and flags

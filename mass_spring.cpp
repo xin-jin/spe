@@ -17,6 +17,7 @@
 
 #include "Graph.hpp"
 #include "combined_force.hpp"
+#include "combined_constraint.hpp"
 
 
 
@@ -40,6 +41,8 @@ static constexpr double K = 100.0;
 typedef Graph<NodeData, EdgeData> GraphType;
 typedef typename GraphType::node_type Node;
 typedef typename GraphType::edge_type Edge;
+
+using size_type = GraphType::size_type;
 
 
 /** Change a graph's nodes according to a step of the symplectic Euler
@@ -171,6 +174,45 @@ struct DampingForce {
 	static double c;
 };
 
+class FixNodeConstraint {
+public:
+	FixNodeConstraint() = delete;
+	FixNodeConstraint(const Node&& n, const Point&& pt): id_(n.index()), pt_(pt) {}
+	FixNodeConstraint(int id, const Point& pt): id_(id), pt_(pt) {}
+	
+	template <typename Graph>
+	Point operator()(Graph& graph, double t) {
+		(void) t;
+		graph.node(id_).position() = pt_;
+	}
+	
+private:
+	size_type id_;
+	Point pt_;
+};
+
+class PlaneConstraint {
+public:
+	PlaneConstraint() {}
+	PlaneConstraint(double z, const Point&& pt): z_(z), pt_(pt) {}
+
+	template <typename Graph>
+	Point operator()(Graph& graph, double t) {
+		(void) t;
+		for (Node n : nodesRange(graph)) {
+			Point xi = n.position();
+			if (dot(xi, pt_) < z_) {
+				xi.z = z_;
+				n.value().vel.z = 0;
+			}
+		}
+	}
+										
+private:
+	double z_ = -0.75;
+	Point pt_ = Point(0, 0, 1);
+};
+
 double Problem1Force::L;
 double DampingForce::c;
 
@@ -234,7 +276,7 @@ int main(int argc, char** argv) {
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, CombinedForce<GravityForce, MassSpringForce, DampingForce>());
+        symp_euler_step(graph, t, dt, make_combined_force(GravityForce(), MassSpringForce(), DampingForce()));
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
         viewer.set_label(t);

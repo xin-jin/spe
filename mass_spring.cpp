@@ -152,18 +152,13 @@ using combined_force = CombinedForce<Node, Fn...>;
 
 
 template <typename ...F>
-auto makeCombinedForce() {
+auto makeCombinedForce(__attribute__((unused)) F ...f) {
 	return CombinedForce<F...>();
 }
 
-// template <typename Node, typename ...F>
-// CombinedForce<F...> makeCombinedForce(F&& ...f) {
-// 	return std::forward<CombinedForce<F...>>(CombinedForce<Node, F...>());
-// }
-
-// // Alias for makeCombinedForce
-// template <typename Node, typename ...F>
-// constexpr auto make_combined_force = makeCombinedForce<Node, F...>;
+// Alias for makeCombinedForce
+template <typename Node, typename ...F>
+constexpr auto make_combined_force = makeCombinedForce<Node, F...>;
 
 
 struct MassSpringForce {

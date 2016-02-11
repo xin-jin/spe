@@ -124,6 +124,82 @@ void initEdges(GraphType& g) {
 	}
 }
 
+// TODO: Write specification
+// precondition: all forces must have the same node type
+template <typename F1, typename ...Fn>
+struct CombinedForce {
+	using Node = typename F1::NodeType;
+	Point operator()(Node n, double t) {
+		return f1(n, t) + fn(n, t);
+	}
+
+	F1 f1;
+	CombinedForce<Fn...> fn;
+};
+
+template <typename F>
+struct CombinedForce<F> {
+	using Node = typename F::NodeType;
+	Point operator()(Node n, double t) {
+		return f(n, t);
+	}
+
+	F f;
+};
+
+template <typename Node, typename ...Fn>
+using combined_force = CombinedForce<Node, Fn...>;
+
+
+template <typename ...F>
+auto makeCombinedForce() {
+	return CombinedForce<F...>();
+}
+
+// template <typename Node, typename ...F>
+// CombinedForce<F...> makeCombinedForce(F&& ...f) {
+// 	return std::forward<CombinedForce<F...>>(CombinedForce<Node, F...>());
+// }
+
+// // Alias for makeCombinedForce
+// template <typename Node, typename ...F>
+// constexpr auto make_combined_force = makeCombinedForce<Node, F...>;
+
+
+template <typename Node>
+struct MassSpringForce {
+	using NodeType = Node;
+	Point operator()(Node n, double t) {
+		Point xi = n.position();
+        (void) t;
+        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
+            return Point(0, 0, 0);
+
+        Point fSpring(0);
+        for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
+            Point xj = j.node2().position();
+            Point xDiff = xi - xj;
+            double xDiffLen = norm(xDiff);
+			EdgeData eValue = (*j).value();
+            fSpring -= eValue.K*xDiff/xDiffLen*(xDiffLen - eValue.L);
+        }
+
+		return fSpring;
+	}
+};
+
+template <typename Node>
+struct GravityForce {
+	using NodeType = Node;
+	Point operator()(Node n, double t) {
+		Point xi = n.position();
+		(void) t;
+		if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
+			return Point(0, 0, 0);
+		Point fGrav(0, 0, -grav);
+        return fGrav * n.value().mass;
+	}
+};
 
 double Problem1Force::L;
 
@@ -156,7 +232,7 @@ int main(int argc, char** argv) {
 		// Diagonal edges
         graph.add_edge(nodes[t[0]], nodes[t[3]]);
         graph.add_edge(nodes[t[1]], nodes[t[2]]);
-		
+
         graph.add_edge(nodes[t[1]], nodes[t[3]]);
         graph.add_edge(nodes[t[2]], nodes[t[3]]);
     }
@@ -186,7 +262,7 @@ int main(int argc, char** argv) {
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, Problem1Force());
+        symp_euler_step(graph, t, dt, CombinedForce<GravityForce<Node>, MassSpringForce<Node>>());
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
         viewer.set_label(t);

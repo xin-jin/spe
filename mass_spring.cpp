@@ -128,7 +128,7 @@ void initEdges(GraphType& g) {
 // precondition: all forces must have the same node type
 template <typename F1, typename ...Fn>
 struct CombinedForce {
-	using Node = typename F1::NodeType;
+	template <typename Node>
 	Point operator()(Node n, double t) {
 		return f1(n, t) + fn(n, t);
 	}
@@ -139,7 +139,7 @@ struct CombinedForce {
 
 template <typename F>
 struct CombinedForce<F> {
-	using Node = typename F::NodeType;
+	template <typename Node>
 	Point operator()(Node n, double t) {
 		return f(n, t);
 	}
@@ -166,9 +166,8 @@ auto makeCombinedForce() {
 // constexpr auto make_combined_force = makeCombinedForce<Node, F...>;
 
 
-template <typename Node>
 struct MassSpringForce {
-	using NodeType = Node;
+	template <typename Node>	
 	Point operator()(Node n, double t) {
 		Point xi = n.position();
         (void) t;
@@ -188,9 +187,8 @@ struct MassSpringForce {
 	}
 };
 
-template <typename Node>
 struct GravityForce {
-	using NodeType = Node;
+	template <typename Node>
 	Point operator()(Node n, double t) {
 		Point xi = n.position();
 		(void) t;
@@ -262,7 +260,7 @@ int main(int argc, char** argv) {
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, CombinedForce<GravityForce<Node>, MassSpringForce<Node>>());
+        symp_euler_step(graph, t, dt, CombinedForce<GravityForce, MassSpringForce>());
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
         viewer.set_label(t);

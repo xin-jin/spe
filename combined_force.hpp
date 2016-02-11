@@ -6,29 +6,6 @@
 
 
 template <typename F1, typename ...Fn>
-class CombinedForce;
-
-template <typename F>
-class CombinedForce<F>;
-
-template <typename ...F>
-using combined_force = CombinedForce<F...>;
-
-
-/** Return a combined force, function version */
-template <typename ...F>
-auto makeCombinedForce(F&& ...f) {
-	return combined_force<F...>(f...);
-}
-
-/** Wrapper for makeCombinedForce */
-template <typename ...F>
-auto make_combined_force(F&& ...f) {
-	return makeCombinedForce(std::forward<F>(f)...);
-}
-
-
-template <typename F1, typename ...Fn>
 class CombinedForce {
 public:
 	template <typename Node>
@@ -56,6 +33,22 @@ public:
 private:	
 	F f_;
 };
+
+template <typename ...F>
+using combined_force = CombinedForce<F...>;
+
+
+/** Return a combined force, function version */
+template <typename ...F>
+auto makeCombinedForce(F&& ...f) {
+	return combined_force<F...>(f...);
+}
+
+/** Wrapper for makeCombinedForce */
+template <typename ...F>
+auto make_combined_force(F&& ...f) {
+	return makeCombinedForce(std::forward<F>(f)...);
+}
 
 
 #endif // COMBINED_FORCE_HPP

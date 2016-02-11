@@ -13,7 +13,8 @@ public:
 		return f1_(n, t) + fn_(n, t);
 	}
 	
-	CombinedForce(F1 f1, Fn ...fn): f1_(f1), fn_(fn...) {}
+	CombinedForce(F1&& f1, Fn&& ...fn):
+		f1_(f1), fn_(std::forward<Fn>(fn)...) {}
 	
 private:		
 	F1 f1_;
@@ -28,7 +29,7 @@ public:
 		return f_(n, t);
 	}	
 
-	CombinedForce<F>(F f): f_(f) {}
+	CombinedForce<F>(F&& f): f_(f) {}
 	
 private:	
 	F f_;
@@ -38,10 +39,10 @@ template <typename ...F>
 using combined_force = CombinedForce<F...>;
 
 
-/** Return a combined force, function version */
+/** Return a combined force */
 template <typename ...F>
 auto makeCombinedForce(F&& ...f) {
-	return combined_force<F...>(f...);
+	return combined_force<F...>(std::forward<F>(f)...);
 }
 
 /** Wrapper for makeCombinedForce */

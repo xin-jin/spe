@@ -150,9 +150,9 @@ struct CombinedForce<F> {
 template <typename Node, typename ...Fn>
 using combined_force = CombinedForce<Node, Fn...>;
 
-
+/** Return a combined force, function version */
 template <typename ...F>
-auto makeCombinedForce(__attribute__((unused)) F ...f) {
+auto makeCombinedForce(__attribute__((unused)) F&& ...f) {
 	return CombinedForce<F...>();
 }
 

@@ -167,7 +167,7 @@ auto makeCombinedForce() {
 
 
 struct MassSpringForce {
-	template <typename Node>	
+	template <typename Node>
 	Point operator()(Node n, double t) {
 		Point xi = n.position();
         (void) t;
@@ -199,7 +199,21 @@ struct GravityForce {
 	}
 };
 
+struct DampingForce {
+	template <typename Node>
+	Point operator()(Node n, double t) {
+		Point xi = n.position();
+		(void) t;
+		if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
+			return Point(0, 0, 0);
+		return -c * n.value().vel;
+	}
+
+	static double c;
+};
+
 double Problem1Force::L;
+double DampingForce::c;
 
 
 int main(int argc, char** argv) {
@@ -239,6 +253,7 @@ int main(int argc, char** argv) {
     initNodes(graph);
 	initEdges(graph);
     Problem1Force::L = (*(graph.edge_begin())).length();
+	DampingForce::c = 1.0/graph.num_nodes();
 
     // Print out the stats
     std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
@@ -260,14 +275,14 @@ int main(int argc, char** argv) {
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, CombinedForce<GravityForce, MassSpringForce>());
+        symp_euler_step(graph, t, dt, CombinedForce<GravityForce, MassSpringForce, DampingForce>());
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
         viewer.set_label(t);
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
-		// if (graph.size() < 100)
+		if (graph.size() < 100)
             CME212::sleep(0.001);
     }
 

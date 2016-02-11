@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 #include <cassert>
-#include <unordered_set>
+#include <unordered_map>
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
@@ -20,7 +20,7 @@
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
-template <typename V>
+template <typename V, typename E = int>
 class Graph {
 private:
     // Internal data members are declared at the end
@@ -31,6 +31,7 @@ public:
     //
 
     typedef V node_value_type;
+	typedef E edge_value_type;
 
     /** Type of this graph. */
     typedef Graph graph_type;
@@ -68,7 +69,7 @@ public:
 
     using PointsType = std::vector<Point>;
     using EdgesType = std::vector<Edge>;
-    using AdjListType = std::vector<std::unordered_set<size_type>>;
+    using AdjListType = std::vector<std::unordered_map<size_type, E>>;
     using NodeValuesType = std::vector<node_value_type>;
 
     //
@@ -90,7 +91,7 @@ public:
      *
      * Node objects are used to access information about the Graph's nodes.
      */
-    class Node {
+    class Node: private totally_ordered<EdgeIterator> {
     public:
         /** Construct an invalid node.
          *
@@ -194,7 +195,7 @@ public:
      * Edges are order-insensitive pairs of nodes. Two Edges with the same nodes
      * are considered equal if they connect the same nodes, in either order.
      */
-    class Edge {
+    class Edge: private totally_ordered<EdgeIterator> {
     public:
         /** Construct an invalid Edge. */
         Edge() {};
@@ -235,12 +236,28 @@ public:
 			return norm(graph_->node(i1_).position() - graph_->node(i2_).position());
 		}
 
+
+		/** Return this edge's value */
+		edge_value_type& value() {
+			size_type m = std::min(i1_, i2_);
+			size_type M = std::max(i1_, i2_);
+			auto pos = graph_->adjList_[m].find(M);
+			return pos->second;
+		}
+
+		const edge_value_type& value() const {
+			size_type m = std::min(i1_, i2_);
+			size_type M = std::max(i1_, i2_);
+			auto pos = graph_->adjList_[m].find(M);
+			return pos->second;
+		}
+
     private:
         // Allow Graph to access Edge's private member data and functions.
         friend class Graph;
 
         /** Constructs an edge given a graph pointer and two node indices*/
-        Edge(const Graph* graph, const size_type& i1, const size_type& i2)
+        explicit Edge(const Graph* graph, const size_type& i1, const size_type& i2)
             : i1_(i1), i2_(i2), graph_(const_cast<Graph*>(graph)) {}
 
         // Indices of the two endpoints of the edge
@@ -327,7 +344,7 @@ public:
 
         /** Deference the iterator */
         Edge operator*() const {
-            return Edge(graph_, i1_, *i2_);
+            return Edge(graph_, i1_, i2_->first);
         }
 
         /** Avanced to next position */
@@ -343,7 +360,7 @@ public:
 		void fix() {
 			while (i1_ < graph_->adjList_.size()) {
 				while (i2_ != graph_->adjList_[i1_].end()) {
-					while (i1_ < *i2_)
+					while (i1_ < i2_->first)
 						return;
 					++i2_;
 				}
@@ -367,7 +384,7 @@ public:
         // Pointer back to the Graph contrainer
         Graph *graph_;
         // The set iterator at the other endpoint
-        typename std::unordered_set<size_type>::iterator i2_;
+        typename std::unordered_map<size_type, E>::iterator i2_;
 
         // Construct an EdgeIterator with one node, starting at the beginning of that
         // node's adjacency list
@@ -403,12 +420,12 @@ public:
 
         /** Deference the iterator */
         Edge operator*() const {
-            return Edge(n_.graph_, n_.index(), *pos_);
+            return Edge(n_.graph_, n_.index(), pos_->first);
         }
-		
+
         /** Return the other endpoint of the edge */
         Node node2() const {
-            return n_.graph_->node(*pos_);
+            return n_.graph_->node(pos_->first);
         }
 
         /** Advanced to next position */
@@ -429,10 +446,10 @@ public:
         // The underlying Node
         Node n_;
         // Iterator at adjList_
-        std::unordered_set<size_type>::iterator pos_;
+        typename std::unordered_map<size_type, E>::iterator pos_;
         // Construct an IncidentIterator with Node index and an iterator at that
         // Node's adjacency list
-        IncidentIterator(const Node& n, std::unordered_set<size_type>::iterator pos)
+        IncidentIterator(const Node& n, typename std::unordered_map<size_type, E>::iterator pos)
             : n_(n), pos_(pos) {}
     };
 
@@ -461,7 +478,7 @@ public:
     Node add_node(const Point& position, const node_value_type& nValue = node_value_type()) {
         points_.push_back(position);
         nValues_.push_back(nValue);
-        adjList_.push_back(std::unordered_set<size_type>());
+        adjList_.push_back(std::unordered_map<size_type, E>());
         return Node(this, size()-1);
     }
 
@@ -536,8 +553,8 @@ public:
     Edge add_edge(const Node& a, const Node& b) {
         if (!has_edge(a, b)) {
             ++nEdges_;
-            adjList_[a.index()].insert(b.index());
-            adjList_[b.index()].insert(a.index());
+            adjList_[a.index()].insert({ b.index(), E() });
+            adjList_[b.index()].insert({ a.index(), E() });
         }
         return Edge(this, a.index(), b.index());
     }
@@ -595,6 +612,23 @@ struct NodesRange {
 
 template <typename Graph>
 NodesRange<Graph> nodesRange(Graph& g) {
+	return {g};
+}
+
+template <typename Graph>
+struct EdgesRange {
+	typename Graph::edge_iterator begin() {
+		return g.edge_begin();
+	}
+	typename Graph::edge_iterator end() {
+		return g.edge_end();
+	}
+	Graph& g;
+};
+
+
+template <typename Graph>
+EdgesRange<Graph> edgesRange(Graph& g) {
 	return {g};
 }
 

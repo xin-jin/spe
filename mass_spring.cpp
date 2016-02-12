@@ -221,50 +221,50 @@ private:
 /** An invisible sphere */
 class SphereConstraint {
 public:
-	SphereConstraint() {}
-	SphereConstraint(const Point& c, double r): c_(c), r_(r) {}
+    SphereConstraint() {}
+    SphereConstraint(const Point& c, double r): c_(c), r_(r) {}
 
-	template <typename Graph>
-	void operator()(Graph& graph, double t) {
-		(void) t;
-		for (Node n : nodesRange(graph)) {
-			Point xi = n.position();
-			double dis = norm(xi - c_);
-			if (dis < r_) {
-				Point R = (xi-c_)/dis;
-				Point &v = n.value().vel;
-				xi = R*r_ + c_;
-				v = v - dot(v, R)*R;
-			}
-		}
-	}
+    template <typename Graph>
+    void operator()(Graph& graph, double t) {
+        (void) t;
+        for (Node n : nodesRange(graph)) {
+            Point xi = n.position();
+            double dis = norm(xi - c_);
+            if (dis < r_) {
+                Point R = (xi-c_)/dis;
+                Point &v = n.value().vel;
+                xi = R*r_ + c_;
+                v = v - dot(v, R)*R;
+            }
+        }
+    }
 
 private:
-	Point c_ = Point(.5, .5, -.5);
-	double r_ = .15;
+    Point c_ = Point(.5, .5, -.5);
+    double r_ = .15;
 };
 
 /** An invisible sphere. It eats everything that touches it! */
 class DemonSphereConstraint {
 public:
-	DemonSphereConstraint() {}
-	DemonSphereConstraint(const Point& c, double r): c_(c), r_(r) {}
+    DemonSphereConstraint() {}
+    DemonSphereConstraint(const Point& c, double r): c_(c), r_(r) {}
 
-	template <typename Graph>
-	void operator()(Graph& graph, double t) {
-		(void) t;
-		for (Node n : nodesRange(graph)) {
-			Point xi = n.position();
-			double dis = norm(xi - c_);
-			if (dis < r_) {
-				graph.remove_node(n);
-			}
-		}
-	}
+    template <typename Graph>
+    void operator()(Graph& graph, double t) {
+        (void) t;
+        for (Node n : nodesRange(graph)) {
+            Point xi = n.position();
+            double dis = norm(xi - c_);
+            if (dis < r_) {
+                graph.remove_node(n);
+            }
+        }
+    }
 
 private:
-	Point c_ = Point(.5, .5, -.5);
-	double r_ = .15;
+    Point c_ = Point(.5, .5, -.5);
+    double r_ = .15;
 };
 
 
@@ -321,7 +321,6 @@ int main(int argc, char** argv) {
 
     viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
     viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
-
     viewer.center_view();
 
     // Begin the mass-spring simulation
@@ -329,22 +328,26 @@ int main(int argc, char** argv) {
     double t_start = 0;
     double t_end = 5.0;
 
-	auto customConstraint = makeCombinedConstraint(SphereConstraint());
+    auto customConstraint = makeCombinedConstraint(DemonSphereConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce()));
+        
         customConstraint(graph, t);
+
+        // Clear the viewer's nodes and edges
+        viewer.clear();
+        node_map.clear();
 
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
-		viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
+        viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
         viewer.set_label(t);
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
         // if (graph.size() < 100)
-            CME212::sleep(0.001);
+        CME212::sleep(0.001);
     }
 
     return 0;

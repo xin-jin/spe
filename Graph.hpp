@@ -431,12 +431,12 @@ public:
 
         /** Deference the iterator */
         Edge operator*() const {
-            return Edge(n_.graph_, n_.index(), pos_->first);
+            return Edge(n_.graph_, n_.index(), n_.graph_->uid2idx(pos_->first));
         }
 
         /** Return the other endpoint of the edge */
         Node node2() const {
-            return n_.graph_->node(pos_->first);
+            return n_.graph_->node(n_.graph_->uid2idx(pos_->first));
         }
 
         /** Advanced to next position */
@@ -477,6 +477,11 @@ public:
     size_type num_nodes() const {
         return size();
     }
+
+	/** Translate uid to index */
+	size_type uid2idx(uid_type uid) const {
+		return nodeInfo_[uid].idx;
+	}
 
     /** Add a node to the graph, returning the added node.
      * @param[in] position The new node's position

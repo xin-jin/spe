@@ -328,11 +328,11 @@ int main(int argc, char** argv) {
     double t_start = 0;
     double t_end = 5.0;
 
-    auto customConstraint = makeCombinedConstraint(DemonSphereConstraint());
+    auto customConstraint = makeCombinedConstraint(SphereConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        
+        symp_euler_step(graph, t, dt, makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce()));
         customConstraint(graph, t);
 
         // Clear the viewer's nodes and edges
@@ -346,8 +346,8 @@ int main(int argc, char** argv) {
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
-        // if (graph.size() < 100)
-        CME212::sleep(0.001);
+        if (graph.size() < 100)
+            CME212::sleep(0.001);
     }
 
     return 0;

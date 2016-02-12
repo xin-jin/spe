@@ -244,7 +244,7 @@ private:
     double r_ = .15;
 };
 
-/** An invisible sphere. It eats everything that touches it! */
+/** An invisible sphere. It eats everything that touches it (┛`д´)┛ */
 class DemonSphereConstraint {
 public:
     DemonSphereConstraint() {}
@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
     double t_start = 0;
     double t_end = 5.0;
 
-    auto customConstraint = makeCombinedConstraint(SphereConstraint());
+    auto customConstraint = makeCombinedConstraint(DemonSphereConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;

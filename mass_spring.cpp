@@ -74,7 +74,8 @@ double symp_euler_step(G& g, double t, double dt, F force) {
     for (auto it = g.node_begin(); it != g.node_end(); ++it) {
         auto n = *it;
         // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
-        n.value().vel += force(n, t) * (dt / n.value().mass);
+		if (n.position() != Point(0, 0, 0) && n.position() != Point(1, 0, 0))
+			n.value().vel += force(n, t) * (dt / n.value().mass);
     }
 
     return t + dt;
@@ -92,8 +93,6 @@ struct Problem1Force {
     Point operator()(NODE n, double t) {
         Point xi = n.position();
         (void) t;
-        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
-            return Point(0, 0, 0);
 
         Point fSpring(0);
         for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
@@ -134,8 +133,6 @@ struct MassSpringForce {
     Point operator()(Node n, double t) {
         Point &xi = n.position();
         (void) t;
-        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
-            return Point(0, 0, 0);
 
         Point fSpring(0);
         for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
@@ -154,10 +151,7 @@ struct MassSpringForce {
 struct GravityForce {
     template <typename Node>
     Point operator()(Node n, double t) {
-        Point &xi = n.position();
         (void) t;
-        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
-            return Point(0, 0, 0);
         Point fGrav(0, 0, -grav);
         return fGrav * n.value().mass;
     }
@@ -167,10 +161,7 @@ struct GravityForce {
 struct DampingForce {
     template <typename Node>
     Point operator()(Node n, double t) {
-        Point &xi = n.position();
         (void) t;
-        if (xi == Point(0, 0, 0) || xi == Point(1, 0, 0))
-            return Point(0, 0, 0);
         return -c * n.value().vel;
     }
 

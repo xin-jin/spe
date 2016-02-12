@@ -1,10 +1,14 @@
 #ifndef COMBINED_FORCE_HPP
 #define COMBINED_FORCE_HPP
 
+/** @file combined_force.hpp
+ * @brief Provide a function to combine an arbitrary number of forces
+ */
+
 #include <utility>
 #include "CME212/Point.hpp"
 
-// TODO: full specification
+/** A force class representing combined forces */
 template <typename F1, typename ...Fn>
 class CombinedForce {
 public:
@@ -21,6 +25,7 @@ private:
 	CombinedForce<Fn...> fn_;
 };
 
+// Boundary case
 template <typename F>
 class CombinedForce<F> {
 public:
@@ -35,11 +40,14 @@ private:
 	F f_;
 };
 
+// Alias of CombinedForce
 template <typename ...F>
 using combined_force = CombinedForce<F...>;
 
 
-/** Return a combined force */
+/** Given an arbitrary number of forces, return
+ * a combined force.
+ */
 template <typename ...F>
 auto makeCombinedForce(F&& ...f) {
 	return combined_force<F...>(std::forward<F>(f)...);

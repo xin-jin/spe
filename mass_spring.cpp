@@ -177,7 +177,9 @@ struct DampingForce {
     static double c;
 };
 
-/** Fixes a certain node to a specified position */
+/** Fixes a certain node to a specified position
+ *	Time complexity: O(1)
+ */
 class FixNodeConstraint {
 public:
     FixNodeConstraint() {};
@@ -195,7 +197,9 @@ private:
     Point pt_ = Point(0, 0, 0);
 };
 
-/** An invisible wall */
+/** An invisible wall
+ * Time complexity: O(graph.size())
+ */
 class PlaneConstraint {
 public:
     PlaneConstraint() {}
@@ -218,7 +222,9 @@ private:
     Point pt_ = Point(0, 0, 1);
 };
 
-/** An invisible sphere */
+/** An invisible sphere
+ * Time complexity: O(graph.size())
+ */
 class SphereConstraint {
 public:
     SphereConstraint() {}
@@ -244,7 +250,9 @@ private:
     double r_ = .15;
 };
 
-/** An invisible sphere. It eats everything that touches it (┛`д´)┛ */
+/** An invisible sphere. It eats everything that touches it (┛`д´)┛
+ * Time complexity: O(graph.size())
+ */
 class DemonSphereConstraint {
 public:
     DemonSphereConstraint() {}

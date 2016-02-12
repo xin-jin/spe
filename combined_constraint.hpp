@@ -4,7 +4,7 @@
 #include <utility>
 #include "Graph.hpp"
 
-// TODO: full specification
+/** A class representing combined constraints */
 template <typename C1, typename ...Cn>
 class CombinedConstraint {
 public:
@@ -22,6 +22,7 @@ private:
     CombinedConstraint<Cn...> cn_;
 };
 
+// Boundary case
 template <typename C>
 struct CombinedConstraint<C> {
 public:
@@ -36,11 +37,15 @@ private:
     C c_;
 };
 
+// Alias of CombinedConstraint
 template <typename ...C>
 using combined_constraint = CombinedConstraint<C...>;
 
 
-/** Return a combined constraint */
+/** Given an arbitrary number of constraints,
+ * return a combined constraint incorporating all
+ * of them
+ */
 template <typename ...C>
 auto makeCombinedConstraint(C&& ...c) {
     return combined_constraint<C...>(std::forward<C>(c)...);

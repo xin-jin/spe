@@ -42,7 +42,8 @@ typedef Graph<NodeData, EdgeData> GraphType;
 typedef typename GraphType::node_type Node;
 typedef typename GraphType::edge_type Edge;
 
-using size_type = GraphType::size_type;
+using   size_type = GraphType::size_type;
+using   uid_type  = GraphType::uid_type;
 
 
 /** Change a graph's nodes according to a step of the symplectic Euler
@@ -58,24 +59,26 @@ using size_type = GraphType::size_type;
  *           where n is a node of the graph and @a t is the current time.
  *           @a force must return a Point representing the force vector on Node
  *           at time @a t.
+ * @tparam C is a function object called as @a force(@a g, @a t)
+ *           it should reset all points violating the specified constraints.
  */
-template <typename G, typename F>
-double symp_euler_step(G& g, double t, double dt, F force) {
+template <typename G, typename F, typename C>
+double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
     // Compute the t+dt position
     for (auto it = g.node_begin(); it != g.node_end(); ++it) {
         auto n = *it;
-
         // Update the position of the node according to its velocity
         // x^{n+1} = x^{n} + v^{n} * dt
         n.position() += n.value().vel * dt;
     }
 
+    constraint(g, t);
+
     // Compute the t+dt velocity
     for (auto it = g.node_begin(); it != g.node_end(); ++it) {
         auto n = *it;
         // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
-		if (n.position() != Point(0, 0, 0) && n.position() != Point(1, 0, 0))
-			n.value().vel += force(n, t) * (dt / n.value().mass);
+        n.value().vel += force(n, t) * (dt / n.value().mass);
     }
 
     return t + dt;
@@ -168,24 +171,31 @@ struct DampingForce {
     static double c;
 };
 
-/** Fixes a certain node to a specified position
- *	Time complexity: O(1)
+/** Fix certain nodes to their original positions
+ *  This constraint requires the underlying nodes never be removed
+ *  Time complexity: O(1)
  */
-class FixNodeConstraint {
+class FixedNodesConstraint {
 public:
-    FixNodeConstraint() {};
-    FixNodeConstraint(const Node&& n, const Point&& pt): id_(n.index()), pt_(pt) {}
-    FixNodeConstraint(int id, const Point& pt): id_(id), pt_(pt) {}
+    FixedNodesConstraint() {};
 
     template <typename Graph>
-    Point operator()(Graph& graph, double t) {
+    void operator()(Graph& graph, double t) {
         (void) t;
-        graph.node(id_).position() = pt_;
+        for (size_type i = 0; i != nodes_.size(); ++i) {
+            assert(graph.has_node(nodes_[i]));
+            nodes_[i].position() = pt_[i];
+        }
+    }
+
+    void operator+=(Node n) {
+        nodes_.push_back(n);
+        pt_.push_back(n.position());
     }
 
 private:
-    size_type id_ = 0;
-    Point pt_ = Point(0, 0, 0);
+    std::vector<Node> nodes_;
+    std::vector<Point> pt_;
 };
 
 /** An invisible wall
@@ -270,7 +280,6 @@ private:
 double Problem1Force::L;
 double DampingForce::c;
 
-
 int main(int argc, char** argv) {
     // Check arguments
     if (argc < 3) {
@@ -327,12 +336,17 @@ int main(int argc, char** argv) {
     double t_start = 0;
     double t_end = 5.0;
 
-    auto customConstraint = makeCombinedConstraint(DemonSphereConstraint());
+    auto customForce = makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce());
+    FixedNodesConstraint fixedC;
+    for (Node n : nodesRange(graph)) {
+        if (n.position() == Point(0, 0, 0) || n.position() == Point(1, 0, 0))
+            fixedC += n;
+    }
+    auto customConstraint = makeCombinedConstraint(fixedC, DemonSphereConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce()));
-        customConstraint(graph, t);
+        symp_euler_step(graph, t, dt, customForce, customConstraint);
 
         // Clear the viewer's nodes and edges
         viewer.clear();

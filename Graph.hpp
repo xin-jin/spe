@@ -115,7 +115,7 @@ public:
          * do_something(x);
          * @endcode
          */
-        Node() {};
+        Node() {};		
 
         /** Return this node's position. */
         const Point& position() const {
@@ -522,9 +522,10 @@ public:
      * @post new num_nodes() == old num_nodes() - 1
      * @return The index of the removed node (before removal)
      *
-     * Amortized time complexity is O(n.degree())
+     * Amortized time complexity is O(@a n.degree())
      * The indices of the remaining nodes may be changed.
-     * All existing node_iterators are invalidated.
+     * All existing node_iterators are invalidated, and
+     * all Node objects corresponding to @a n are invalidated
      */
     size_type remove_node(const Node& n) {
         assert(has_node(n));
@@ -557,7 +558,8 @@ public:
      *
      * Amortized time complexity is O(degree of the removed node)
      * The indices of the remaining nodes may be changed.
-     * All existing node_iterators are invalidated.
+     * All existing node_iterators are invalidated, and
+	 * all Node objects corresponding to @a n are invalidated
      */
     node_iterator remove_node(node_iterator n_it) {
         return NodeIterator(this, remove_node(*n_it));

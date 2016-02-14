@@ -13,8 +13,8 @@ template <typename ...>
 class CombinedForce {
 public:
     template <typename Node>
-    Point operator()(__attribute__((unused)) Node,
-                     __attribute__((unused)) double t) {
+    Point operator()(__attribute__((unused)) const Node&,
+                     __attribute__((unused)) double) {
         return Point(0);
     }
 };
@@ -23,7 +23,7 @@ template <typename F1, typename ...Fn>
 class CombinedForce<F1, Fn...> {
 public:
     template <typename Node>
-    Point operator()(Node n, double t) {
+    Point operator()(const Node& n, double t) {
         return f1_(n, t) + fn_(n, t);
     }
 

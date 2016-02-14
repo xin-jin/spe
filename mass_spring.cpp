@@ -93,7 +93,7 @@ struct Problem1Force {
      * except that points at (0, 0, 0) and (1, 0, 0) never move. We can
      * model that by returning a zero-valued force. */
     template <typename NODE>
-    Point operator()(NODE n, double t) {
+    Point operator()(const NODE& n, double t) {
         Point xi = n.position();
         (void) t;
 

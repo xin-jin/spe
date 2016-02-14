@@ -13,45 +13,20 @@
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 
+
 /** A wrapper of int to provide "strongly typed" int. It supports implicit conversion
  * to the underlying int so that it can directly be used as a subscript, but forbids
  * implicit conversion *from* other types.
+ *
+ * It's also hashable.
  */
 template <typename TAG>
-struct IntWrapper {
-	using IntType = unsigned;
-	IntWrapper() = default;
-    explicit IntWrapper(IntType v_): v(v_) {}
-    operator IntType() const {
-        return v;
-    }
-	IntWrapper& operator++() {
-		++v;
-		return *this;
-	}
-	IntWrapper& operator--() {
-		--v;
-		return *this;
-	}
-	bool operator==(const IntWrapper& rhs) const {
-		return v == rhs.v;
-	}
-	bool operator<(const IntWrapper& rhs) const {
-		return v < rhs.v;
-	}
-	IntType v;
-};
+struct IntWrapper;
 
 namespace std {
-	// Hash function for IntWrapper
-	template <typename TAG>
-	struct hash<IntWrapper<TAG>> {
-		typedef IntWrapper<TAG> argument_type;
-		typedef size_t result_type;
-		result_type operator()(const argument_type& a) const {
-			return std::hash<int>()(a.v);
-		}
-	};
+    // Hash function for IntWrapper
+    template <typename TAG>
+    struct hash<IntWrapper<TAG>>;
 }
 
 /** @class Graph
@@ -105,8 +80,8 @@ public:
         Return type of Graph::Node::index(), Graph::num_nodes(),
         Graph::num_edges(), and argument type of Graph::node(size_type)
     */
-	struct size_type_tag;
-	struct uid_type_tag;
+    struct size_type_tag;
+    struct uid_type_tag;
     using size_type = IntWrapper<size_type_tag>;
     using uid_type = IntWrapper<uid_type_tag>;
 
@@ -157,7 +132,7 @@ public:
          * do_something(x);
          * @endcode
          */
-        Node() {};		
+        Node() {};
 
         /** Return this node's position. */
         const Point& position() const {
@@ -279,8 +254,8 @@ public:
             // i2_), max(i1_, i2_))
             auto m = std::min(i1_, i2_), me = std::min(e.i1_, e.i2_);
             return (graph_ < e.graph_)
-				|| (graph_ == e.graph_
-					&&  (m < me || (m == me && std::max(i1_, i2_) < std::max(e.i1_, e.i2_))));
+                || (graph_ == e.graph_
+                    &&  (m < me || (m == me && std::max(i1_, i2_) < std::max(e.i1_, e.i2_))));
         }
 
         /** Return the length of the edge */
@@ -601,7 +576,7 @@ public:
      * Amortized time complexity is O(degree of the removed node)
      * The indices of the remaining nodes may be changed.
      * All existing node_iterators are invalidated, and
-	 * all Node objects corresponding to @a n are invalidated
+     * all Node objects corresponding to @a n are invalidated
      */
     node_iterator remove_node(node_iterator n_it) {
         return NodeIterator(this, remove_node(*n_it));
@@ -683,10 +658,10 @@ public:
     Node node(size_type i) const {
         return Node(this, idx2uid_[i]);
     }
-	
-	Node node(typename size_type::IntType i) const {
-		return Node(this, idx2uid_[i]);
-	}
+
+    Node node(typename size_type::IntType i) const {
+        return Node(this, idx2uid_[i]);
+    }
 
     /** Return the total number of edges in the graph.
      *
@@ -709,11 +684,11 @@ public:
     Edge edge(size_type i) const {
         return *std::next(edge_begin(), i);
     }
-	
-	Edge edge(typename size_type::IntType i) const {
+
+    Edge edge(typename size_type::IntType i) const {
         return *std::next(edge_begin(), i);
     }
-	
+
     // [[deprecated]]
     // Edge edge(size_type i) const {
     //  return edges_[i];
@@ -830,6 +805,47 @@ template <typename Graph>
 EdgesRange<Graph> edgesRange(Graph& g) {
     return {g};
 }
+
+template <typename TAG>
+struct IntWrapper {
+    using IntType = unsigned;
+
+    IntWrapper() = default;
+    explicit IntWrapper(IntType v_): v(v_) {}
+
+    operator IntType() const {
+        return v;
+    }
+
+    IntWrapper& operator++() {
+        ++v;
+        return *this;
+    }
+
+    IntWrapper& operator--() {
+        --v;
+        return *this;
+    }
+
+    bool operator==(const IntWrapper& rhs) const {
+        return v == rhs.v;
+    }
+
+    bool operator<(const IntWrapper& rhs) const {
+        return v < rhs.v;
+    }
+
+    IntType v;
+};
+
+template <typename TAG>
+struct std::hash<IntWrapper<TAG>> {
+	typedef IntWrapper<TAG> argument_type;
+	typedef size_t result_type;
+	result_type operator()(const argument_type& a) const {
+		return std::hash<int>()(a.v);
+	}
+};
 
 
 #endif // CME212_GRAPH_HPP

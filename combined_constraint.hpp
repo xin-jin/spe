@@ -6,7 +6,12 @@
 
 /** A class representing combined constraints */
 template <typename ...>
-class CombinedConstraint;
+class CombinedConstraint {
+public:
+    template <typename Graph>
+    void operator()(__attribute__((unused)) Graph&,
+                    __attribute__((unused)) double) {}
+};
 
 template <typename C1, typename ...Cn>
 class CombinedConstraint<C1, Cn...> {
@@ -25,15 +30,6 @@ private:
     CombinedConstraint<Cn...> cn_;
 };
 
-// Boundary case
-template <>
-class CombinedConstraint<> {
-public:
-    template <typename Graph>
-    void operator()(__attribute__((unused)) Graph&,
-					__attribute__((unused)) double) {}
-};
-
 // Alias of CombinedConstraint
 template <typename ...C>
 using combined_constraint = CombinedConstraint<C...>;
@@ -46,7 +42,7 @@ using combined_constraint = CombinedConstraint<C...>;
  */
 template <typename ...C>
 auto makeCombinedConstraint(C&& ...c) {
-	return combined_constraint<C...>(std::forward<C>(c)...);
+    return combined_constraint<C...>(std::forward<C>(c)...);
 }
 
 /** Wrapper for makeCombinedConstraint */

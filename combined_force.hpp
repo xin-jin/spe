@@ -10,7 +10,14 @@
 
 /** A force class representing combined forces */
 template <typename ...>
-class CombinedForce;
+class CombinedForce {
+public:
+    template <typename Node>
+    Point operator()(__attribute__((unused)) Node,
+                     __attribute__((unused)) double t) {
+        return Point(0);
+    }
+};
 
 template <typename F1, typename ...Fn>
 class CombinedForce<F1, Fn...> {
@@ -26,17 +33,6 @@ public:
 private:
     F1 f1_;
     CombinedForce<Fn...> fn_;
-};
-
-// Boundary case
-template <>
-class CombinedForce<> {
-public:
-    template <typename Node>
-    Point operator()(__attribute__((unused)) Node,
-                     __attribute__((unused)) double t) {
-        return Point(0);
-    }
 };
 
 // Alias of CombinedForce

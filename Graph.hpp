@@ -60,7 +60,7 @@ namespace std {
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
-template <typename V, typename E = int>
+template <typename V, typename E = bool>
 class Graph {
 private:
     // Internal data members are declared at the end

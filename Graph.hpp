@@ -13,6 +13,46 @@
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 
+/** A wrapper of int to provide "strongly typed" int. It supports implicit conversion
+ * to the underlying int so that it can directly be used as a subscript, but forbids
+ * implicit conversion *from* other types.
+ */
+template <typename TAG>
+struct IntWrapper {
+	using IntType = unsigned;
+	IntWrapper() = default;
+    explicit IntWrapper(IntType v_): v(v_) {}
+    operator IntType() const {
+        return v;
+    }
+	IntWrapper& operator++() {
+		++v;
+		return *this;
+	}
+	IntWrapper& operator--() {
+		--v;
+		return *this;
+	}
+	bool operator==(const IntWrapper& rhs) const {
+		return v == rhs.v;
+	}
+	bool operator<(const IntWrapper& rhs) const {
+		return v < rhs.v;
+	}
+	IntType v;
+};
+
+namespace std {
+	// Hash function for IntWrapper
+	template <typename TAG>
+	struct hash<IntWrapper<TAG>> {
+		typedef IntWrapper<TAG> argument_type;
+		typedef size_t result_type;
+		result_type operator()(const argument_type& a) const {
+			return std::hash<int>()(a.v);
+		}
+	};
+}
 
 /** @class Graph
  * @brief A template for 3D undirected graphs.
@@ -65,8 +105,10 @@ public:
         Return type of Graph::Node::index(), Graph::num_nodes(),
         Graph::num_edges(), and argument type of Graph::node(size_type)
     */
-    using size_type = unsigned;
-    using uid_type = unsigned;
+	struct size_type_tag;
+	struct uid_type_tag;
+    using size_type = IntWrapper<size_type_tag>;
+    using uid_type = IntWrapper<uid_type_tag>;
 
     struct NodeInfo {
         Point p;
@@ -163,7 +205,7 @@ public:
         }
 
         /** Return the degree of the node */
-        size_type degree() const {
+        typename size_type::IntType degree() const {
             return graph_->adjList_[uid_].size();
         }
 
@@ -497,10 +539,10 @@ public:
     Node add_node(const Point& position, const node_value_type& nValue = node_value_type()) {
         if (!removedUids_.size()) {
             nodeInfo_.emplace_back(position, nValue, nNodes_);
-            idx2uid_.push_back(nNodes_);
+            idx2uid_.emplace_back(nNodes_);
             ++nNodes_;
             adjList_.push_back(std::unordered_map<uid_type, E>());
-            return Node(this, nNodes_ - 1);
+            return Node(this, uid_type(nNodes_ - 1));
         }
         else {
             uid_type reuse = removedUids_.back();
@@ -641,6 +683,10 @@ public:
     Node node(size_type i) const {
         return Node(this, idx2uid_[i]);
     }
+	
+	Node node(typename size_type::IntType i) const {
+		return Node(this, idx2uid_[i]);
+	}
 
     /** Return the total number of edges in the graph.
      *
@@ -663,6 +709,11 @@ public:
     Edge edge(size_type i) const {
         return *std::next(edge_begin(), i);
     }
+	
+	Edge edge(typename size_type::IntType i) const {
+        return *std::next(edge_begin(), i);
+    }
+	
     // [[deprecated]]
     // Edge edge(size_type i) const {
     //  return edges_[i];
@@ -707,8 +758,8 @@ public:
      * Invalidates all outstanding Node and Edge objects.
      */
     void clear() {
-        nEdges_ = 0;
-        nNodes_ = 0;
+        nEdges_.v = 0;
+        nNodes_.v = 0;
         nodeInfo_.clear();
         adjList_.clear();
         idx2uid_.clear();
@@ -717,7 +768,7 @@ public:
 
     /** Return an iterator pointing to the first node */
     node_iterator node_begin() const {
-        return node_iterator(this, 0);
+        return node_iterator(this, size_type(0));
     }
     /** Return an iterator pointing to the next position of the last node */
     node_iterator node_end() const {
@@ -725,16 +776,16 @@ public:
     }
     /** Return an iterator pointing to the first edge */
     edge_iterator edge_begin() const {
-        return edge_iterator(this, 0);
+        return edge_iterator(this, uid_type(0));
     }
     /** Return an iterator pointing to the next position of the last edge */
     edge_iterator edge_end() const {
-        return edge_iterator(this, adjList_.size());
+        return edge_iterator(this, uid_type(adjList_.size()));
     }
 
 private:
-    size_type nEdges_ = 0;
-    size_type nNodes_ = 0;
+    size_type nEdges_{0};
+    size_type nNodes_{0};
     // EdgesType edges_; [[deprecated]]
     // Indexed by uid
     std::vector<NodeInfo> nodeInfo_;

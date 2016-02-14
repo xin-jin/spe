@@ -182,7 +182,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (size_type i = 0; i != nodes_.size(); ++i) {
+        for (size_type i{0}; i != nodes_.size(); ++i) {
             assert(graph.has_node(nodes_[i]));
             nodes_[i].position() = pt_[i];
         }

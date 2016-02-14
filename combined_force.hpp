@@ -45,13 +45,13 @@ using combined_force = CombinedForce<F...>;
  * it creates a force that is always 0;
  */
 template <typename ...F>
-auto makeCombinedForce(F&& ...f) {
+auto makeCombinedForce(F&& ...f) -> combined_force<F...> {
     return combined_force<F...>(std::forward<F>(f)...);
 }
 
 /** Wrapper for makeCombinedForce */
 template <typename ...F>
-auto make_combined_force(F&& ...f) {
+auto make_combined_force(F&& ...f) -> combined_force<F...> {
     return makeCombinedForce(std::forward<F>(f)...);
 }
 

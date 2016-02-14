@@ -41,13 +41,13 @@ using combined_constraint = CombinedConstraint<C...>;
  * a void constraint (a functor that does nothing).
  */
 template <typename ...C>
-auto makeCombinedConstraint(C&& ...c) {
+auto makeCombinedConstraint(C&& ...c) -> combined_constraint<C...> {
     return combined_constraint<C...>(std::forward<C>(c)...);
 }
 
 /** Wrapper for makeCombinedConstraint */
 template <typename ...C>
-auto make_combined_constraint(C&& ...c) {
+auto make_combined_constraint(C&& ...c) -> combined_constraint<C...> {
     return makeCombinedConstraint(std::forward<C>(c)...);
 }
 

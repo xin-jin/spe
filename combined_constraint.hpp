@@ -5,8 +5,11 @@
 #include "Graph.hpp"
 
 /** A class representing combined constraints */
+template <typename ...>
+class CombinedConstraint;
+
 template <typename C1, typename ...Cn>
-class CombinedConstraint {
+class CombinedConstraint<C1, Cn...> {
 public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
@@ -23,18 +26,12 @@ private:
 };
 
 // Boundary case
-template <typename C>
-struct CombinedConstraint<C> {
+template <>
+class CombinedConstraint<> {
 public:
     template <typename Graph>
-    void operator()(Graph& graph, double t) {
-        c_(graph, t);
-    }
-
-    CombinedConstraint(C&& c): c_(c) {}
-
-private:
-    C c_;
+    void operator()(__attribute__((unused)) Graph&,
+					__attribute__((unused)) double) {}
 };
 
 // Alias of CombinedConstraint
@@ -44,11 +41,12 @@ using combined_constraint = CombinedConstraint<C...>;
 
 /** Given an arbitrary number of constraints,
  * return a combined constraint incorporating all
- * of them
+ * of them. If no argument is supplied, it returns
+ * a void constraint (a functor that does nothing).
  */
 template <typename ...C>
 auto makeCombinedConstraint(C&& ...c) {
-    return combined_constraint<C...>(std::forward<C>(c)...);
+	return combined_constraint<C...>(std::forward<C>(c)...);
 }
 
 /** Wrapper for makeCombinedConstraint */

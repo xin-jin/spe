@@ -342,7 +342,7 @@ int main(int argc, char** argv) {
         if (n.position() == Point(0, 0, 0) || n.position() == Point(1, 0, 0))
             fixedC += n;
     }
-    auto customConstraint = makeCombinedConstraint(fixedC, DemonSphereConstraint());
+    auto customConstraint = makeCombinedConstraint(fixedC, PlaneConstraint(), DemonSphereConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;

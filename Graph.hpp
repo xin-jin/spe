@@ -521,7 +521,7 @@ public:
         }
         else {
             uid_type reuse = removedUids_.back();
-            removedUids_.erase(removedUids_.end()-1);
+            removedUids_.pop_back();
             nodeInfo_[reuse].p = position;
             nodeInfo_[reuse].v = nValue;
             nodeInfo_[reuse].idx = nNodes_;
@@ -701,9 +701,8 @@ public:
      * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
      */
     bool has_edge(const Node& a, const Node& b) const {
-        return (a.graph_ == b.graph_)
-            && (a.graph_ == this)
-            && adjList_[a.uid_].find(b.uid_) != adjList_[a.uid_].end();
+		assert(has_node(a) && has_node(b));
+        return adjList_[a.uid_].find(b.uid_) != adjList_[a.uid_].end();
     }
 
     /** Add an edge to the graph, or return the current edge if it already exists.

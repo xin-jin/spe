@@ -12,22 +12,8 @@
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
+#include "IntWrapper.hpp"
 
-
-/** A wrapper of int to provide "strongly typed" int. It supports implicit conversion
- * to the underlying int so that it can directly be used as a subscript, but forbids
- * implicit conversion *from* other types.
- *
- * It's also hashable.
- */
-template <typename TAG>
-struct IntWrapper;
-
-namespace std {
-    // Hash function for IntWrapper
-    template <typename TAG>
-    struct hash<IntWrapper<TAG>>;
-}
 
 /** @class Graph
  * @brief A template for 3D undirected graphs.
@@ -804,47 +790,6 @@ template <typename Graph>
 EdgesRange<Graph> edgesRange(Graph& g) {
     return {g};
 }
-
-template <typename TAG>
-struct IntWrapper {
-    using IntType = unsigned;
-
-    IntWrapper() = default;
-    explicit IntWrapper(IntType v_): v(v_) {}
-
-    operator IntType() const {
-        return v;
-    }
-
-    IntWrapper& operator++() {
-        ++v;
-        return *this;
-    }
-
-    IntWrapper& operator--() {
-        --v;
-        return *this;
-    }
-
-    bool operator==(const IntWrapper& rhs) const {
-        return v == rhs.v;
-    }
-
-    bool operator<(const IntWrapper& rhs) const {
-        return v < rhs.v;
-    }
-
-    IntType v;
-};
-
-template <typename TAG>
-struct std::hash<IntWrapper<TAG>> {
-	typedef IntWrapper<TAG> argument_type;
-	typedef size_t result_type;
-	result_type operator()(const argument_type& a) const {
-		return std::hash<int>()(a.v);
-	}
-};
 
 
 #endif // CME212_GRAPH_HPP

@@ -16,8 +16,8 @@
 #include "CME212/Point.hpp"
 
 #include "Graph.hpp"
-#include "combined_force.hpp"
-#include "combined_constraint.hpp"
+#include "struct/combined_force.hpp"
+#include "struct/combined_constraint.hpp"
 
 
 

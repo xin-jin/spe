@@ -12,7 +12,7 @@
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
-#include "IntWrapper.hpp"
+#include "struct/IntWrapper.hpp"
 
 
 /** @class Graph

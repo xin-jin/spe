@@ -43,8 +43,6 @@ typedef typename GraphType::node_type Node;
 typedef typename GraphType::edge_type Edge;
 
 using   size_type = GraphType::size_type;
-using   uid_type  = GraphType::uid_type;
-
 
 /** Change a graph's nodes according to a step of the symplectic Euler
  *    method with the given node force.
@@ -342,7 +340,7 @@ int main(int argc, char** argv) {
         if (n.position() == Point(0, 0, 0) || n.position() == Point(1, 0, 0))
             fixedC += n;
     }
-    auto customConstraint = makeCombinedConstraint(fixedC, PlaneConstraint(), DemonSphereConstraint());
+    auto customConstraint = makeCombinedConstraint(fixedC, PlaneConstraint(), SphereConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;

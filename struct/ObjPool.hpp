@@ -33,11 +33,16 @@ public:
 	void remove(uid_type uid) {
 		removedUids_.push_back(uid);
 		alive_[uid] = false;
+		--size_;
 	}
 
-	InfoType& info(uid_type uid) {
+	const InfoType& info(uid_type uid) const {
 		return infos_[uid];
 	}
+	
+	InfoType& info(uid_type uid) {
+		return infos_[uid];
+	}	
 
 	bool alive(uid_type uid) const {
 		return alive_[uid];
@@ -45,6 +50,10 @@ public:
 
 	size_type size() const {
 		return size_;
+	}
+
+	size_type capacity() const {
+		return infos_.size();
 	}
 
 	void clear() {

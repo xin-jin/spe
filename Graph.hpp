@@ -85,11 +85,13 @@ public:
 
         EdgeInfo(EdgeInfo&& ei):
             v(std::move(ei.v)),
-            n1(ei.n1),
-            n2(ei.n2) {}
+            n1(std::move(ei.n1)),
+            n2(std::move(ei.n2)) {}
 
         EdgeInfo& operator=(EdgeInfo&& e) {
             v = std::move(e.v);
+			n1 = std::move(e.n1);
+			n2 = std::move(e.n2);
             return *this;
         }
     };
@@ -108,7 +110,7 @@ public:
         NodeInfo(NodeInfo&& ni):
             p(std::move(ni.p)),
             v(std::move(ni.v)),
-            idx(ni.idx),
+            idx(std::move(ni.idx)),
             adjList(std::move(ni.adjList)) {}
 
         NodeInfo& operator=(NodeInfo&& n) {
@@ -515,21 +517,17 @@ public:
         // The surrounding graph
         Graph *graph_;
 
-        // The adjList of n_
-        AdjListType &adj_;
-
         // The underlying iterator
         typename AdjListType::iterator pos_;
 
         // if (isBegin) then point to the begin position,
         // else point to the end position
         IncidentIterator(const Graph* graph, n_uid_type uid, bool isBegin)
-            : graph_(const_cast<Graph*>(graph)),
-              adj_(graph_->nodePool_.info(uid).adjList) {
+            : graph_(const_cast<Graph*>(graph)) {
             if (isBegin)
-                pos_ = adj_.begin();
+                pos_ = graph_->nodePool_.info(uid).adjList.begin();
             else
-                pos_ = adj_.end();
+                pos_ = graph_->nodePool_.info(uid).adjList.end();
         }
     };
 
@@ -561,8 +559,9 @@ public:
      * Complexity: O(1) amortized operations.
      */
     Node add_node(const Point& position, const node_value_type& nValue = node_value_type()) {
-        n_uid_type newUid = nodePool_.add(NodeInfo(position, nValue, size_type(size())));
+        n_uid_type newUid = nodePool_.add(NodeInfo(position, nValue, size()));
         idx2uid_.push_back(newUid);
+		assert(size() == idx2uid_.size());
         return Node(this, newUid);
     }
 
@@ -751,7 +750,7 @@ public:
         auto it = find_node(a_adj, b.uid_);
         if (it == a_adj.end()) {
             e_uid_type newUid = edgePool_.add(EdgeInfo(a.uid_, b.uid_));
-            nodePool_.info(a.uid_).adjList.push_back({ b.uid_, newUid });
+            a_adj.push_back({ b.uid_, newUid });
             nodePool_.info(b.uid_).adjList.push_back({ a.uid_, newUid });
             return Edge(this, newUid);
         }
@@ -776,7 +775,7 @@ public:
     }
     /** Return an iterator pointing to the next position of the last node */
     node_iterator node_end() const {
-        return node_iterator(this, size_type(size()));
+        return node_iterator(this, size());
     }
     /** Return an iterator pointing to the first edge */
     edge_iterator edge_begin() const {

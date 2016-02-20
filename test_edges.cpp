@@ -181,10 +181,14 @@ int main()
 	g.remove_node(g.node(0));
 	g.add_node(Point(-1, -1, -1), -1);
 	g.add_edge(g.node(0), g.node(9));
+	g.add_edge(g.node(5), g.node(9));
+	g.node(0).value() = -300;
+	assert(g.has_edge(g.node(0), g.node(9)));
+	assert(g.node(3).index() == 3);
     for (auto k = g.node_begin(); k != g.node_end(); ++k) {
 		std::cout << "Node " << (*k).index() << std::endl;
         for (auto i = (*k).edge_begin(); i != (*k).edge_end(); ++i) {
-            std::cout << i.node2().index() << " " << i.node2().value() << std::endl;
+            std::cout << i.node2().index() << " " << i.node2().value() << " " << i.node2().position() << std::endl;
         }
     }
 	std::cout << std::endl;

@@ -114,7 +114,7 @@ struct Problem1Force {
 /** Initialize NodeData */
 void initNodes(GraphType& g) {
     double m = 1.0/g.num_nodes();
-    for (Node n : nodesRange(g)) {
+    for (Node&& n : nodesRange(g)) {
         n.value().vel = Point(0);
         n.value().mass = m;
     }
@@ -122,7 +122,7 @@ void initNodes(GraphType& g) {
 
 /** Initialize EdgeData */
 void initEdges(GraphType& g) {
-    for (Edge e : edgesRange(g)) {
+    for (Edge&& e : edgesRange(g)) {
         e.value().K = K;
         e.value().L = e.length();
     }
@@ -207,7 +207,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (Node n : nodesRange(graph)) {
+        for (Node&& n : nodesRange(graph)) {
             Point &xi = n.position();
             if (dot(xi, pt_) < z_) {
                 xi.z = z_;
@@ -232,7 +232,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (Node n : nodesRange(graph)) {
+        for (Node&& n : nodesRange(graph)) {
             Point xi = n.position();
             double dis = norm(xi - c_);
             if (dis < r_) {
@@ -260,7 +260,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (Node n : nodesRange(graph)) {
+        for (Node&& n : nodesRange(graph)) {
             Point xi = n.position();
             double dis = norm(xi - c_);
             if (dis < r_) {
@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
 
     auto customForce = makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce());
     FixedNodesConstraint fixedC;
-    for (Node n : nodesRange(graph)) {
+    for (Node&& n : nodesRange(graph)) {
         if (n.position() == Point(0, 0, 0) || n.position() == Point(1, 0, 0))
             fixedC += n;
     }
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
-        if (graph.size() < 100)
+		if (graph.size() < 100)
             CME212::sleep(0.001);
     }
 

@@ -233,7 +233,7 @@ public:
     void operator()(Graph& graph, double t) {
         (void) t;
         for (Node&& n : nodesRange(graph)) {
-            Point xi = n.position();
+            Point &xi = n.position();
             double dis = norm(xi - c_);
             if (dis < r_) {
                 Point R = (xi-c_)/dis;
@@ -261,7 +261,7 @@ public:
     void operator()(Graph& graph, double t) {
         (void) t;
         for (Node&& n : nodesRange(graph)) {
-            Point xi = n.position();
+            Point &xi = n.position();
             double dis = norm(xi - c_);
             if (dis < r_) {
                 graph.remove_node(n);

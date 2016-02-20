@@ -58,20 +58,21 @@ int shortest_path_lengths(Graph<int>& g, const Point& point) {
     // Find the closet Node to @a point
     auto root_iter = std::min_element(g.node_begin(), g.node_end(), MyComparator(point));
     // Initialize all values to be -1
-    for (auto i = g.node_begin(); i != g.node_end(); ++i)
-        (*i).value() = -1;
+	for (auto n : nodesRange(g)) {
+		n.value() = -1;
+	}
     (*root_iter).value() = 0;
     std::queue<Node> pQueue;
     pQueue.push(*root_iter);
-    int maxLen;
+    int maxLen{0};
 
     // Begin BFS
     while (!pQueue.empty()) {
         Node current = pQueue.front();
+		pQueue.pop();				
         maxLen = current.value();
-        pQueue.pop();
         for (auto i = current.edge_begin(); i != current.edge_end(); ++i) {
-            Node node2 = (*i).node2();
+            Node node2 = i.node2();
             if (node2.value() == -1) {
                 node2.value() = current.value() + 1;
                 pQueue.push(node2);

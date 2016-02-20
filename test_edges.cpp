@@ -166,38 +166,6 @@ int main()
     sf_print(e1 != e2, "G1-G2 Edge comparison !=");
     sf_print(e1 < e2 || e2 < e1, "G1-G2 Edge comparison < >");
 
-    // My tests
-    g.clear();
-    for (int i = 0; i < 10; ++i) {
-        g.add_node(Point(i, i, i), i*i);
-    }
-    for (int i = 1; i < 5; ++i) {
-        g.add_edge(g.node(i), g.node(0));
-    }
-	g.add_edge(g.node(1), g.node(4));
-	g.add_edge(g.node(3), g.node(8));
-	g.add_edge(g.node(9), g.node(3));
-	g.add_edge(g.node(9), g.node(0));
-	g.remove_node(g.node(0));
-	g.add_node(Point(-1, -1, -1), -1);
-	g.add_edge(g.node(0), g.node(9));
-	g.add_edge(g.node(5), g.node(9));
-	g.node(0).value() = -300;
-	assert(g.has_edge(g.node(0), g.node(9)));
-	assert(g.node(3).index() == 3);
-    for (auto k = g.node_begin(); k != g.node_end(); ++k) {
-		std::cout << "Node " << (*k).index() << std::endl;
-        for (auto i = (*k).edge_begin(); i != (*k).edge_end(); ++i) {
-            std::cout << i.node2().index() << " " << i.node2().value() << " " << i.node2().position() << std::endl;
-        }
-    }
-	std::cout << std::endl;
-    for (auto i = g.edge_begin(); i != g.edge_end(); ++i) {
-        std::cout << (*i).node1().index() << " " << (*i).node2().index() << std::endl;
-    }
-	std::cout << g.num_edges() << std::endl;
-
-
     if (fail_count) {
         std::cerr << "\n" << fail_count
                   << (fail_count > 1 ? " FAILURES" : " FAILURE") << std::endl;

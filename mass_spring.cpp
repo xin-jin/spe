@@ -92,12 +92,12 @@ struct Problem1Force {
      * model that by returning a zero-valued force. */
     template <typename NODE>
     Point operator()(const NODE& n, double t) {
-        Point xi = n.position();
+        Point &xi = n.position();
         (void) t;
 
         Point fSpring(0);
         for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
-            Point xj = j.node2().position();
+            Point &xj = j.node2().position();
             Point xDiff = xi - xj;
             double xDiffLen = norm(xDiff);
             EdgeData eValue = (*j).value();
@@ -137,7 +137,7 @@ struct MassSpringForce {
 
         Point fSpring(0);
         for (auto j = n.edge_begin(); j != n.edge_end(); ++j) {
-            Point xj = j.node2().position();
+            Point &xj = j.node2().position();
             Point xDiff = xi - xj;
             double xDiffLen = norm(xDiff);
             EdgeData eValue = (*j).value();

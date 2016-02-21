@@ -653,9 +653,7 @@ public:
      * is invalidated
      */
     bool remove_edge(const Edge& e) {
-        Node n1 = e.node1();
-        Node n2 = e.node2();
-        return remove_edge(n1, n2);
+        return remove_edge(e.node1(), e.node2());
     }
 
     /** Remove an edge from the graph
@@ -670,8 +668,7 @@ public:
      * is invalidated
      */
     bool remove_edge(edge_iterator e_it) {
-        Edge e = *e_it;
-        return remove_edge(e);
+        return remove_edge(*e_it);
     }
 
 

@@ -366,32 +366,45 @@ public:
         typedef std::ptrdiff_t difference_type;
 
         /** Construct an invalid NodeIterator. */
-        NodeIterator() {};
+        NodeIterator() = delete;
 
         /** Deference the iterator */
         Node operator*() const {
-            return graph_->node(idx_);
+            return Node(graph_, uid_);
         }
 
         /** Advance to next position and return the new position*/
         node_iterator& operator++() {
-            ++idx_;
+            ++uid_;
+			fix();
             return *this;
         }
 
         /** Test whether two iterators are at the same position */
         bool operator==(const node_iterator& rhs) const {
-            return idx_ == rhs.idx_ && graph_ == rhs.graph_;
+            return uid_ == rhs.uid_ && graph_ == rhs.graph_;
         }
 
     private:
         friend class Graph;
 
-        /** Construct a NodeIterator with the index of the underlying Node */
-        NodeIterator(const Graph* graph, size_type idx): idx_(idx), graph_(const_cast<Graph*>(graph)) {}
+        NodeIterator(const Graph* graph, bool isBegin): graph_(const_cast<Graph*>(graph)) {
+			if (isBegin)
+				uid_.v = 0;
+			else
+				uid_.v = graph_->nodePool_.capacity();
+			fix();
+		}
 
-        // The index of Node it is pointing to
-        size_type idx_;
+		// fix the iterator's position when it's at an invalid node
+		void fix() {
+			while (!graph_->nodePool_.alive(uid_) &&
+				   uid_ < graph_->nodePool_.capacity())
+				++uid_;
+		}
+
+        // The uid of Node it is pointing to
+        n_uid_type uid_;
         // Pointer back to the Graph contrainer
         Graph *graph_;
     };
@@ -567,18 +580,18 @@ public:
 
     /** Remove a node from the graph.
      * @param[in] n The node to be removed
-     * @pre has_node(@a n) == true
      * @post Node @a n along with all its edges are removed from the graph
-     * @post new num_nodes() == old num_nodes() - 1
-     * @return The index of the removed node (before removal)
+     * @post new num_nodes() == old num_nodes() - 1 if @return is true
+     *       new num_nodes() == old num_nodes() if @return is false
+     * @return Whether the node is an valid node of the graph (before removal)
      *
      * Amortized time complexity is O(sum of degrees of all @a n's neighbors)
      * The indices of the remaining nodes may be changed.
-     * All existing node_iterators are invalidated, and
+     * All existing node_iterators at @a n are invalidated, and
      * all Node objects corresponding to @a n are invalidated
      */
-    size_type remove_node(const Node& n) {
-        assert(has_node(n));
+    bool remove_node(const Node& n) {
+        if (!has_node(n)) return false;
 
         auto &nAdj = nodePool_.info(n.uid_).adjList;
         // Remove all edges associated to this node
@@ -596,24 +609,23 @@ public:
         // Remove node from the pool
         nodePool_.remove(n.uid_);
 
-        return n.index();
+        return true;
     }
 
     /** Remove a node from the graph
      * @param[in] n_it A node_iterator at the node to be removed
-     * @pre The underlying node belongs to the graph
      * @post The node associated to @a n_it along with all its edges are removed
      * from the graph
-     * @post new num_nodes() == old num_nodes() -1
-     * @return A node_iterator at the node that occupies the removed node's index
-     * after the removal
-     *
+     * @post new num_nodes() == old num_nodes() - 1 if @return is true
+     *       new num_nodes() == old num_nodes() if @return is false
+     * @return Whether the node is an valid node of the graph (before removal)
+     *	 
      * Amortized time complexity is O(sum of degrees of all the removed node's neighbors)
      * The indices of the remaining nodes may be changed.
-     * All existing node_iterators are invalidated, and
+     * All existing node_iterators at the removed node are invalidated, and
      * all Node objects corresponding to @a n are invalidated
      */
-    node_iterator remove_node(node_iterator n_it) {
+    bool remove_node(node_iterator n_it) {
         return NodeIterator(this, remove_node(*n_it));
     }
 
@@ -622,7 +634,8 @@ public:
      * @param[in] n2 the other node of the edge
      * @pre @a n1 and @a n2 both belong to this graph
      * @post The edge is removed from the graph
-     * @post new num_edges() == old num_edges() - 1
+     * @post new num_edges() == old num_edges() - 1 if @return is true
+     * @post new num_edges() == old num_edges() if @return is false
      * @return whether the edge is in the graph (before removal)
      *
      * Amortized time complexity is O(@a n1.degree() + @a n2.degree())
@@ -643,9 +656,10 @@ public:
 
     /** Remove an edge from the graph
      * @param[in] e the edge to be removed
-     * @pre @a e belongs to the graph
+     * @pre The two endponts of @a e belong to the graph
      * @post The edge is removed from the graph
-     * @post new num_edges() == old num_edges() - 1
+     * @post new num_edges() == old num_edges() - 1 if @return is true
+	 * @post new num_edges() == old num_edges() if @return is false
      * @return whether the edge is in the graph (before removal)
      *
      * Amortized time complexity is O(sum of the two endpoints' degrees)
@@ -658,9 +672,10 @@ public:
 
     /** Remove an edge from the graph
      * @param[in] e_it an edge_iterator at the edge to be removed
-     * @pre The underlying edge belongs to the graph
+     * @pre The two endpoints of the underlying edge belongs to the graph
      * @post The edge is removed from the graph
-     * @post new num_edges() == old num_edges() - 1
+     * @post new num_edges() == old num_edges() - 1 if @return is false
+	 * @post new num_edges() == old num_edges() if @return is false
      * @return whether the edge is in the graph (before removal)
      *
      * Amortized time complexity is O(sum of the two endpoints' degrees)
@@ -768,11 +783,11 @@ public:
 
     /** Return an iterator pointing to the first node */
     node_iterator node_begin() const {
-        return node_iterator(this, size_type(0));
+        return node_iterator(this, 1);
     }
     /** Return an iterator pointing to the next position of the last node */
     node_iterator node_end() const {
-        return node_iterator(this, size());
+        return node_iterator(this, 0);
     }
     /** Return an iterator pointing to the first edge */
     edge_iterator edge_begin() const {

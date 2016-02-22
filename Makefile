@@ -34,7 +34,7 @@ DEPSFLAGS = -MD -MF $(DEPSFILE) -MP
 
 # Define any directories containing header files
 #   To include directories use -Ipath/to/files
-INCLUDES += -I./lib
+INCLUDES += -I. -I./lib
 
 # Define CXX compile flags
 CXXFLAGS += -std=c++11 -O3 -funroll-loops -W -Wall -Wextra #-Wfatal-errors

@@ -207,7 +207,7 @@ public:
         return super::finished(r);
     }
 
-private:
+protected:
     ColorFunc &cf_;
     const PositionFunc &pf_;
     CME212::SDLViewer viewer_;

@@ -31,12 +31,6 @@ struct IdentityMatrix {
     operator*(const Vector& v) const {
         return {*this, v};
     }
-
-    // /** Compute the product of a vector with this identity matrix */
-    // template <typename Vector>
-    // Vector operator*(const Vector& x) const {
-    //  return x;
-    // }
 };
 
 /** The number of elements in the matrix */
@@ -74,7 +68,7 @@ int main()
     matrix_type I;
     mtl::dense_vector<double> b(10), x(10);
     iota(b);
-	// preconditionper
+	// preconditioner
 	itl::pc::identity<matrix_type> L(I);
 	// iteration object
 	itl::basic_iteration<double> iter(b, 500, 1.e-6);

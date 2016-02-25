@@ -52,6 +52,10 @@ ifeq ($(UNAME), Darwin)
   LDLIBS += -L/usr/local/lib -lSDLmain -lSDL -Wl,-framework,Cocoa,-framework,OpenGL
 endif
 
+ifeq ($(PROFILE), 1)
+	CXXFLAGS += -g -O0
+endif
+
 ##################
 # The following part of the makefile defines generic rules; it can be used to
 # build any executable just by changing the definitions above.

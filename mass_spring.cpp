@@ -42,7 +42,7 @@ typedef Graph<NodeData, EdgeData> GraphType;
 typedef typename GraphType::node_type Node;
 typedef typename GraphType::edge_type Edge;
 
-using   size_type = GraphType::size_type;
+using   size_type = typename GraphType::size_type;
 
 /** Change a graph's nodes according to a step of the symplectic Euler
  *    method with the given node force.
@@ -153,8 +153,7 @@ struct GravityForce {
     template <typename Node>
     Point operator()(Node n, double t) {
         (void) t;
-        Point fGrav(0, 0, -grav);
-        return fGrav * n.value().mass;
+        return Point(0, 0, -grav*n.value().mass);
     }
 };
 

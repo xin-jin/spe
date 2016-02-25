@@ -18,21 +18,25 @@
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 #include "CME212/BoundingBox.hpp"
+#include "boost/numeric/mtl/mtl.hpp"
+#include <boost/numeric/itl/itl.hpp>
 
 #include "Graph.hpp"
 
+double tol = 1e-10;
+
 struct Force {
     double operator()(const Point& x) {
-        return std::cos(norm_1(x))*5;
+        return std::cos(norm_1(x))*5.0;
     }
 };
 
 struct Boundary {
-    double operator()(const Point& x) {
-        Box3D box(Point(-.6, -.2, -1), Point(.6, .2, 1));
-        if (norm_inf(x-Point(.6, .6, 0)) < .2 &&
-            norm_inf(x-Point(-.6, .6, 0)) < .2 &&
-            norm_inf(x-Point(.6, -.6, 0)) < .2 &&
+    static Box3D box;
+    double operator()(const Point& x) const {
+        if (norm_inf(x-Point(.6, .6, 0)) < .2   ||
+            norm_inf(x-Point(-.6, .6, 0)) < .2  ||
+            norm_inf(x-Point(.6, -.6, 0)) < .2  ||
             norm_inf(x-Point(-.6, -.6, 0)) < .2)
             return -.2;
         else if (box.contains(x))
@@ -40,28 +44,114 @@ struct Boundary {
         else
             return 0;
     }
+    bool contains(const Point& x) const {
+        if (norm_inf(x-Point(.6, .6, 0)) < .2   ||
+            norm_inf(x-Point(-.6, .6, 0)) < .2  ||
+            norm_inf(x-Point(.6, -.6, 0)) < .2  ||
+            norm_inf(x-Point(-.6, -.6, 0)) < .2 ||
+            box.contains(x)                     ||
+            std::abs(norm_inf(x)-1) < tol)
+            return true;
+        else
+            return false;
+    }
 };
 
-
-// HW3: YOUR CODE HERE
-// Define a GraphSymmetricMatrix that maps
-// your Graph concept to MTL's Matrix concept. This shouldn't need to copy or
-// modify Graph at all!
 typedef Graph<char,char> GraphType;  //<  DUMMY Placeholder
+using NodeType = GraphType::Node;
+using VecType = mtl::dense_vector<double>;
+using OnBoundaryType = std::vector<bool>;
+
+class GraphSymmetricMatrix {
+public:
+    GraphSymmetricMatrix(const GraphType& g, const OnBoundaryType& onBd):
+        graph_(g), onBd_(onBd) {}
+
+    size_t size() const {
+        return graph_.size();
+    }
+
+    template <typename VectorIn, typename VectorOut, typename Assign>
+    void mult(const VectorIn& v, VectorOut& w, Assign) const {
+        assert(mtl::size(v) == mtl::size(w));
+        assert(mtl::size(v) == size());
+        for (size_t i = 0; i < size(); ++i) {
+            if (onBd_[i]) {
+                Assign::apply(w[i], v[i]);
+            }
+            else {
+                NodeType n = graph_.node(i);
+                double tmp = -static_cast<double>(n.degree())*v[i];
+                for (auto k = n.edge_begin(); k != n.edge_end(); ++k) {
+                    if (!onBd_[k.index()]) {
+                        tmp += v[k.index()];
+                    }
+                }
+                Assign::apply(w[i], tmp);
+            }
+        }
+    }
+
+    /** Matvec forwards to MTL's lazy mat_cvec_multiplier operator */
+    template <typename Vector>
+    typename mtl::vec::mat_cvec_multiplier<GraphSymmetricMatrix, Vector>
+    operator*(const Vector& v) const {
+        return {*this, v};
+    }
+
+private:
+    const GraphType &graph_;
+    const OnBoundaryType &onBd_;
+};
+
+/** The number of elements in the matrix */
+inline size_t size(const GraphSymmetricMatrix& A) {
+    return A.size();
+}
+/** The number of rows in the matrix */
+inline size_t num_rows(const GraphSymmetricMatrix& A) {
+    return A.size();
+}
+/** The number of columns in the matrix */
+inline size_t num_cols(const GraphSymmetricMatrix& A) {
+    return A.size();
+}
+
+/** Traits that MTL uses to determine properties of our IdentityMatrix */
+namespace mtl {
+    namespace ashape {
+        /** Define Identity Matrix to be a non-scalar type */
+        template<>
+        struct ashape_aux<GraphSymmetricMatrix> {
+            typedef nonscal type;
+        };
+    }
+
+    /** IdentityMatrix implements the Collection concept with value_type and size_type */
+    template<>
+    struct Collection<GraphSymmetricMatrix> {
+        typedef double      value_type;
+        typedef unsigned    size_type;
+    };
+}
+
+
 
 /** Remove all the nodes in graph @a g whose position is within Box3D @a bb.
  * @post For all i, 0 <= i < @a g.num_nodes(),
  *        not bb.contains(g.node(i).position())
  */
 void remove_box(GraphType& g, const Box3D& bb) {
-	for (auto n : nodesRange(g)) {
-		if (bb.contains(n.position())) {
-			g.remove_node(n);
-		}
-	}
+    for (auto n : nodesRange(g)) {
+        if (bb.contains(n.position())) {
+            g.remove_node(n);
+        }
+    }
     return;
 }
 
+Box3D Boundary::box(Point(-.6, -.2, -1), Point(.6, .2, 1));
+Boundary boundary;
 
 
 int main(int argc, char** argv)
@@ -106,10 +196,47 @@ int main(int argc, char** argv)
     remove_box(graph, Box3D(Point( 0.4+h, 0.4+h,-1), Point( 0.8-h, 0.8-h,1)));
     remove_box(graph, Box3D(Point(-0.6+h,-0.2+h,-1), Point( 0.6-h, 0.2-h,1)));
 
-    // HW3: YOUR CODE HERE
-    // Define b using the graph, f, and g.
-    // Construct the GraphSymmetricMatrix A using the graph
-    // Solve Au = b using MTL.
+    // onBd_[i] == true iff node i in on the boundary
+    Boundary bd;
+    OnBoundaryType onBd(graph.size());
+
+    // Define Bd_;
+    for (auto n : nodesRange(graph)) {
+        if (bd.contains(n.position()))
+            onBd[n.index()] = true;
+        else
+            onBd[n.index()] = false;
+    }
+
+    // Define b
+    VecType b(graph.size(), 0.0);
+    Force f;
+    for (auto n : nodesRange(graph)) {
+        if (onBd[n.index()]) {
+            b[n.index()] = bd(n.position());
+        }
+        else {
+            b[n.index()] = h*h*f(n.position());
+            for (auto e = n.edge_begin(); e != n.edge_end(); ++e) {
+                b[n.index()] -= bd(e.node2().position());
+            }
+        }
+    }
+
+    // Define A
+    GraphSymmetricMatrix A(graph, onBd);
+
+    /////////////////////////////////////////
+    // Solve discretized Poission equation //
+    /////////////////////////////////////////
+    // preconditioner
+    itl::pc::identity<GraphSymmetricMatrix> L(A);
+    // iteration object
+    // itl::basic_iteration<double> iter(b, 500, tol);
+    itl::cyclic_iteration<double> iter(b, 500, 1e-10, 0.0, 50);
+    // Solve Ix = b using conjugate gradient method
+    VecType u(graph.size(), 0.0);
+    itl::cg(A, u, b, L, iter);
 
     return 0;
 }

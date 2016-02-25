@@ -83,18 +83,10 @@ public:
         EdgeInfo(edge_value_type v_, n_uid_type n1_, n_uid_type n2_):
             EdgeInfo(n1_, n2_), v(v_) {}
 
-        EdgeInfo(EdgeInfo&& ei):
-            v(std::move(ei.v)),
-            n1(std::move(ei.n1)),
-            n2(std::move(ei.n2)) {}
+        EdgeInfo(EdgeInfo&&) = default;
 
-        EdgeInfo& operator=(EdgeInfo&& e) {
-            v = std::move(e.v);
-			n1 = std::move(e.n1);
-			n2 = std::move(e.n2);
-            return *this;
-        }
-    };
+        EdgeInfo& operator=(EdgeInfo&&) = default;
+	};
 
     struct NodeInfo {
         using AdjListType = std::vector<std::pair<n_uid_type, e_uid_type>>;
@@ -107,20 +99,10 @@ public:
         NodeInfo(Point p_, node_value_type v_, size_type idx_):
             p(p_), v(v_), idx(idx_) {}
 
-        NodeInfo(NodeInfo&& ni):
-            p(std::move(ni.p)),
-            v(std::move(ni.v)),
-            idx(std::move(ni.idx)),
-            adjList(std::move(ni.adjList)) {}
+        NodeInfo(NodeInfo&& ni) = default;
 
-        NodeInfo& operator=(NodeInfo&& n) {
-            p = std::move(n.p);
-            v = std::move(n.v);
-            idx = std::move(n.idx);
-            adjList = std::move(n.adjList);
-            return *this;
-        }
-    };
+        NodeInfo& operator=(NodeInfo&& n) = default;
+	};
 
 private:
     using AdjListType = typename NodeInfo::AdjListType;
@@ -160,7 +142,7 @@ public:
     //
 
     /** Construct an empty graph. */
-    Graph() {}
+    Graph() = default;
 
     /** Default destructor */
     ~Graph() = default;
@@ -511,6 +493,11 @@ public:
         Node node2() const {
             return Node(graph_, pos_->first);
         }
+
+		/** Index of the other endpoint of the edge */
+		size_type index() const {
+			return graph_->uid2idx(pos_->first);
+		}
 
         /** Advanced to next position */
         incident_iterator& operator++() {

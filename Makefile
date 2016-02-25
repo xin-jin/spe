@@ -81,8 +81,9 @@ $(EXEC): % : %.o
 
 # 'make clean' - deletes all .o files, exec, and dependency files
 clean:
-	-$(RM) $(EXEC) $(EXEC).o
+	-$(RM) $(EXEC)
 	$(RM) -r $(DEPSDIR)
+	find . -name "*.o" -delete
 
 # Define rules that do not actually generate the corresponding file
 .PHONY: clean all

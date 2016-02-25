@@ -153,6 +153,70 @@ void remove_box(GraphType& g, const Box3D& bb) {
 Box3D Boundary::box(Point(-.6, -.2, -1), Point(.6, .2, 1));
 Boundary boundary;
 
+class PositionFunc {
+public:
+    PositionFunc(const VecType& u): u_(u) {}
+
+    Point operator()(const NodeType& n) const {
+        return {n.position().x, n.position().y, u_[n.index()]};
+    }
+private:
+    const VecType &u_;
+};
+
+class ColorFunc {
+public:
+    ColorFunc(const VecType& u): u_(u) {};
+
+    CME212::Color operator()(const NodeType& n) const {
+        return CME212::Color::make_heat(std::abs(u_[n.index()])/(u_max+.0001));
+    }
+
+    void update_max() {
+        u_max = std::abs(*(std::max_element(u_.begin(), u_.end(),
+											[](double a, double b){ return std::abs(a) < std::abs(b); })));
+    }
+    
+private:
+	double u_max;
+    const VecType &u_;
+};
+
+template <class Real, class OStream = std::ostream>
+class visual_iteration: public itl::cyclic_iteration<Real> {
+public:
+	typedef itl::cyclic_iteration<Real> super;
+	
+    template <typename Vector>
+    visual_iteration(ColorFunc& cf, const PositionFunc& pf, const GraphType& graph,
+                     const Vector& r0, int max_iter_, Real tol_,
+                     Real atol_ = Real(0), int cycle_ = 100, OStream& out = std::cout):
+		super(r0, max_iter_, tol_, atol_, cycle_, out), 
+        cf_(cf), pf_(pf), graph_(graph) {
+        viewer_.launch();
+		node_map_ = viewer_.empty_node_map(graph_);
+    }
+
+    bool finished() {
+        return super::finished();
+    }
+
+    template <typename T>
+    bool finished(const T& r) {
+		CME212::sleep(.1);
+        cf_.update_max();
+        viewer_.add_nodes(graph_.node_begin(), graph_.node_end(), cf_, pf_, node_map_);
+        viewer_.add_edges(graph_.edge_begin(), graph_.edge_end(), node_map_);
+        return super::finished(r);
+    }
+
+private:
+    ColorFunc &cf_;
+    const PositionFunc &pf_;
+    CME212::SDLViewer viewer_;
+    const GraphType &graph_;
+	decltype(viewer_.empty_node_map(graph_)) node_map_;
+};
 
 int main(int argc, char** argv)
 {
@@ -226,16 +290,33 @@ int main(int argc, char** argv)
     // Define A
     GraphSymmetricMatrix A(graph, onBd);
 
+
+    ///////////////////////////
+    // Initialize the viewer //
+    ///////////////////////////
+    // CME212::SDLViewer viewer;
+    // viewer.launch();
+
+    // auto node_map = viewer.empty_node_map(graph);
+    // ColorFunc::u_max = 0;
+    // viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
+    // viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
+
+
     /////////////////////////////////////////
     // Solve discretized Poission equation //
     /////////////////////////////////////////
+	VecType u(graph.size(), 0.0);
     // preconditioner
     itl::pc::identity<GraphSymmetricMatrix> L(A);
     // iteration object
     // itl::basic_iteration<double> iter(b, 500, tol);
-    itl::cyclic_iteration<double> iter(b, 500, 1e-10, 0.0, 50);
-    // Solve Ix = b using conjugate gradient method
-    VecType u(graph.size(), 0.0);
+    // itl::cyclic_iteration<double> iter(b, 500, 1e-10, 0.0, 10);
+	ColorFunc cf(u);
+	PositionFunc pf(u);
+	
+    visual_iteration<double> iter(cf, pf, graph, b, 500, tol, 0.0, 1);
+    // Solve Au = b using conjugate gradient method
     itl::cg(A, u, b, L, iter);
 
     return 0;

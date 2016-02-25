@@ -21,7 +21,7 @@
 #include "boost/numeric/mtl/mtl.hpp"
 #include <boost/numeric/itl/itl.hpp>
 
-#include "Graph.hpp"
+#include "graph/Graph.hpp"
 
 typedef Graph<bool,char> GraphType;  //<  DUMMY Placeholder
 using NodeType = GraphType::Node;

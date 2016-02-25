@@ -18,7 +18,7 @@
 #include "CME212/SDLViewer.hpp"
 #include "CME212/Util.hpp"
 
-#include "Graph.hpp"
+#include "graph/Graph.hpp"
 
 
 int main(int argc, char** argv)

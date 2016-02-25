@@ -2,7 +2,7 @@
 #define COMBINED_CONSTRAINT_HPP
 
 #include <utility>
-#include "Graph.hpp"
+#include "graph/Graph.hpp"
 
 /** A class representing combined constraints */
 template <typename ...>

@@ -14,7 +14,7 @@
 #include "CME212/SDLViewer.hpp"
 #include "CME212/Util.hpp"
 
-#include "Graph.hpp"
+#include "graph/Graph.hpp"
 
 /** An iterator that skips over elements of another iterator based on whether
  * those elements satisfy a predicate.

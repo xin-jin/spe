@@ -46,14 +46,16 @@ struct IntWrapper {
     IntType v;
 };
 
+namespace std {
 template <typename TAG>
-struct std::hash<IntWrapper<TAG>> {
+struct hash<IntWrapper<TAG>> {
 	typedef IntWrapper<TAG> argument_type;
 	typedef size_t result_type;
 	result_type operator()(const argument_type& a) const {
 		return std::hash<int>()(a.v);
 	}
 };
+}
 
 
 #endif // INT_WRAPPER_HPP

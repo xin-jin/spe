@@ -8,8 +8,8 @@ EXEC += viewer
 EXEC += subgraph
 EXEC += shortest_path
 EXEC += mass_spring
-EXEC += test_nodes
-EXEC += test_edges
+EXEC += unit_test/test_nodes
+EXEC += unit_test/test_edges
 EXEC += mtl_test
 EXEC += poisson
 
@@ -34,7 +34,7 @@ DEPSFLAGS = -MD -MF $(DEPSFILE) -MP
 
 # Define any directories containing header files
 #   To include directories use -Ipath/to/files
-INCLUDES += -I. -I./lib
+INCLUDES += -I. -I./lib -I./graph
 
 # Define CXX compile flags
 CXXFLAGS += -std=c++11 -O3 -funroll-loops -W -Wall -Wextra #-Wfatal-errors
@@ -81,7 +81,7 @@ $(EXEC): % : %.o
 
 # 'make clean' - deletes all .o files, exec, and dependency files
 clean:
-	-$(RM) *.o $(EXEC)
+	-$(RM) $(EXEC) $(EXEC).o
 	$(RM) -r $(DEPSDIR)
 
 # Define rules that do not actually generate the corresponding file

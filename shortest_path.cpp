@@ -18,7 +18,7 @@
 #include "CME212/Util.hpp"
 #include "CME212/Color.hpp"
 
-#include "Graph.hpp"
+#include "graph/Graph.hpp"
 
 
 /** Comparator that compares the distance from a given point p.

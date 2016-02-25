@@ -15,7 +15,7 @@
 #include "CME212/Color.hpp"
 #include "CME212/Point.hpp"
 
-#include "Graph.hpp"
+#include "graph/Graph.hpp"
 #include "struct/combined_force.hpp"
 #include "struct/combined_constraint.hpp"
 
@@ -39,8 +39,8 @@ struct EdgeData {
 static constexpr double K = 100.0;
 
 typedef Graph<NodeData, EdgeData> GraphType;
-typedef typename GraphType::node_type Node;
-typedef typename GraphType::edge_type Edge;
+typedef typename GraphType::node_type NodeType;
+typedef typename GraphType::edge_type EdgeType;
 
 using   size_type = typename GraphType::size_type;
 
@@ -114,7 +114,7 @@ struct Problem1Force {
 /** Initialize NodeData */
 void initNodes(GraphType& g) {
     double m = 1.0/g.num_nodes();
-    for (Node&& n : nodesRange(g)) {
+    for (NodeType&& n : nodesRange(g)) {
         n.value().vel = Point(0);
         n.value().mass = m;
     }
@@ -122,7 +122,7 @@ void initNodes(GraphType& g) {
 
 /** Initialize EdgeData */
 void initEdges(GraphType& g) {
-    for (Edge&& e : edgesRange(g)) {
+    for (EdgeType&& e : edgesRange(g)) {
         e.value().K = K;
         e.value().L = e.length();
     }
@@ -185,13 +185,13 @@ public:
         }
     }
 
-    void operator+=(Node n) {
+    void operator+=(NodeType n) {
         nodes_.push_back(n);
         pt_.push_back(n.position());
     }
 
 private:
-    std::vector<Node> nodes_;
+    std::vector<NodeType> nodes_;
     std::vector<Point> pt_;
 };
 
@@ -206,7 +206,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (Node&& n : nodesRange(graph)) {
+        for (NodeType&& n : nodesRange(graph)) {
             Point &xi = n.position();
             if (dot(xi, pt_) < z_) {
                 xi.z = z_;
@@ -231,7 +231,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (Node&& n : nodesRange(graph)) {
+        for (NodeType&& n : nodesRange(graph)) {
             Point &xi = n.position();
             double dis = norm(xi - c_);
             if (dis < r_) {
@@ -259,7 +259,7 @@ public:
     template <typename Graph>
     void operator()(Graph& graph, double t) {
         (void) t;
-        for (Node&& n : nodesRange(graph)) {
+        for (NodeType&& n : nodesRange(graph)) {
             Point &xi = n.position();
             double dis = norm(xi - c_);
             if (dis < r_) {
@@ -335,7 +335,7 @@ int main(int argc, char** argv) {
 
     auto customForce = makeCombinedForce(GravityForce(), MassSpringForce(), DampingForce());
     FixedNodesConstraint fixedC;
-    for (Node&& n : nodesRange(graph)) {
+    for (NodeType&& n : nodesRange(graph)) {
         if (n.position() == Point(0, 0, 0) || n.position() == Point(1, 0, 0))
             fixedC += n;
     }

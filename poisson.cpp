@@ -23,6 +23,9 @@
 
 #include "Graph.hpp"
 
+typedef Graph<bool,char> GraphType;  //<  DUMMY Placeholder
+using NodeType = GraphType::Node;
+using VecType = mtl::dense_vector<double>;
 double tol = 1e-10;
 
 struct Force {
@@ -57,15 +60,10 @@ struct Boundary {
     }
 };
 
-typedef Graph<char,char> GraphType;  //<  DUMMY Placeholder
-using NodeType = GraphType::Node;
-using VecType = mtl::dense_vector<double>;
-using OnBoundaryType = std::vector<bool>;
-
 class GraphSymmetricMatrix {
 public:
-    GraphSymmetricMatrix(const GraphType& g, const OnBoundaryType& onBd):
-        graph_(g), onBd_(onBd) {}
+    GraphSymmetricMatrix(const GraphType& g):
+        graph_(g) {}
 
     size_t size() const {
         return graph_.size();
@@ -76,14 +74,14 @@ public:
         assert(mtl::size(v) == mtl::size(w));
         assert(mtl::size(v) == size());
         for (size_t i = 0; i < size(); ++i) {
-            if (onBd_[i]) {
+            if (graph_.node(i).value()) {
                 Assign::apply(w[i], v[i]);
             }
             else {
                 NodeType n = graph_.node(i);
                 double tmp = -static_cast<double>(n.degree())*v[i];
                 for (auto k = n.edge_begin(); k != n.edge_end(); ++k) {
-                    if (!onBd_[k.index()]) {
+                    if (!k.node2().value()) {
                         tmp += v[k.index()];
                     }
                 }
@@ -101,7 +99,6 @@ public:
 
 private:
     const GraphType &graph_;
-    const OnBoundaryType &onBd_;
 };
 
 /** The number of elements in the matrix */
@@ -260,23 +257,21 @@ int main(int argc, char** argv)
     remove_box(graph, Box3D(Point( 0.4+h, 0.4+h,-1), Point( 0.8-h, 0.8-h,1)));
     remove_box(graph, Box3D(Point(-0.6+h,-0.2+h,-1), Point( 0.6-h, 0.2-h,1)));
 
-    // onBd_[i] == true iff node i in on the boundary
+    // n.value() == true iff node n is on the boundary
     Boundary bd;
-    OnBoundaryType onBd(graph.size());
-
     // Define Bd_;
     for (auto n : nodesRange(graph)) {
         if (bd.contains(n.position()))
-            onBd[n.index()] = true;
+			n.value() = true;
         else
-            onBd[n.index()] = false;
+			n.value() = false;
     }
 
     // Define b
     VecType b(graph.size(), 0.0);
     Force f;
     for (auto n : nodesRange(graph)) {
-        if (onBd[n.index()]) {
+        if (n.value()) {
             b[n.index()] = bd(n.position());
         }
         else {
@@ -288,20 +283,7 @@ int main(int argc, char** argv)
     }
 
     // Define A
-    GraphSymmetricMatrix A(graph, onBd);
-
-
-    ///////////////////////////
-    // Initialize the viewer //
-    ///////////////////////////
-    // CME212::SDLViewer viewer;
-    // viewer.launch();
-
-    // auto node_map = viewer.empty_node_map(graph);
-    // ColorFunc::u_max = 0;
-    // viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
-    // viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
-
+    GraphSymmetricMatrix A(graph);
 
     /////////////////////////////////////////
     // Solve discretized Poission equation //
@@ -309,12 +291,9 @@ int main(int argc, char** argv)
 	VecType u(graph.size(), 0.0);
     // preconditioner
     itl::pc::identity<GraphSymmetricMatrix> L(A);
-    // iteration object
-    // itl::basic_iteration<double> iter(b, 500, tol);
-    // itl::cyclic_iteration<double> iter(b, 500, 1e-10, 0.0, 10);
 	ColorFunc cf(u);
 	PositionFunc pf(u);
-	
+    // iteration object	
     visual_iteration<double> iter(cf, pf, graph, b, 500, tol, 0.0, 1);
     // Solve Au = b using conjugate gradient method
     itl::cg(A, u, b, L, iter);

@@ -1,10 +1,7 @@
 #pragma once
 
 #include <CME212/Util.hpp>
-
-
-template <typename V, typename E>
-class Graph;
+#include "graph/EdgeIterator.hpp"
 
 /** @class Graph::Edge
  * @brief Class representing the graph's edges.

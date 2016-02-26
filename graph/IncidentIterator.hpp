@@ -3,9 +3,6 @@
 #include "CME212/Util.hpp"
 
 
-template <typename V, typename E>
-class Graph;
-
 /** @class Graph::IncidentIterator
  * @brief Iterator class for edges incident to a node. A forward iterator. */
 template <typename V, typename E>

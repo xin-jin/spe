@@ -3,9 +3,6 @@
 #include "CME212/Util.hpp"
 
 
-template <typename V, typename E>
-class Graph;
-
 /** @class Graph::NodeIterator
  * @brief Iterator class for nodes. A forward iterator. */
 template <typename V, typename E>

@@ -171,27 +171,29 @@ public:
 
     void update_max() {
         u_max = std::abs(*(std::max_element(u_.begin(), u_.end(),
-											[](double a, double b){ return std::abs(a) < std::abs(b); })));
+                                            [](double a, double b){ return std::abs(a) < std::abs(b); })));
     }
-    
+
 private:
-	double u_max;
+    double u_max;
     const VecType &u_;
 };
 
 template <class Real, class OStream = std::ostream>
 class visual_iteration: public itl::cyclic_iteration<Real> {
 public:
-	typedef itl::cyclic_iteration<Real> super;
-	
+    typedef itl::cyclic_iteration<Real> super;
+
     template <typename Vector>
     visual_iteration(ColorFunc& cf, const PositionFunc& pf, const GraphType& graph,
                      const Vector& r0, int max_iter_, Real tol_,
                      Real atol_ = Real(0), int cycle_ = 100, OStream& out = std::cout):
-		super(r0, max_iter_, tol_, atol_, cycle_, out), 
+        super(r0, max_iter_, tol_, atol_, cycle_, out),
         cf_(cf), pf_(pf), graph_(graph) {
         viewer_.launch();
-		node_map_ = viewer_.empty_node_map(graph_);
+        node_map_ = viewer_.empty_node_map(graph_);
+        viewer_.add_nodes(graph_.node_begin(), graph_.node_end(), node_map_);
+        viewer_.add_edges(graph_.edge_begin(), graph_.edge_end(), node_map_);
     }
 
     bool finished() {
@@ -200,10 +202,9 @@ public:
 
     template <typename T>
     bool finished(const T& r) {
-		CME212::sleep(.1);
+        CME212::sleep(.1);
         cf_.update_max();
         viewer_.add_nodes(graph_.node_begin(), graph_.node_end(), cf_, pf_, node_map_);
-        viewer_.add_edges(graph_.edge_begin(), graph_.edge_end(), node_map_);
         return super::finished(r);
     }
 
@@ -212,7 +213,7 @@ protected:
     const PositionFunc &pf_;
     CME212::SDLViewer viewer_;
     const GraphType &graph_;
-	decltype(viewer_.empty_node_map(graph_)) node_map_;
+    decltype(viewer_.empty_node_map(graph_)) node_map_;
 };
 
 int main(int argc, char** argv)
@@ -262,9 +263,9 @@ int main(int argc, char** argv)
     // Define Bd_;
     for (auto n : nodesRange(graph)) {
         if (bd.contains(n.position()))
-			n.value() = true;
+            n.value() = true;
         else
-			n.value() = false;
+            n.value() = false;
     }
 
     // Define b
@@ -288,12 +289,12 @@ int main(int argc, char** argv)
     /////////////////////////////////////////
     // Solve discretized Poission equation //
     /////////////////////////////////////////
-	VecType u(graph.size(), 0.0);
+    VecType u(graph.size(), 0.0);
     // preconditioner
     itl::pc::identity<GraphSymmetricMatrix> L(A);
-	ColorFunc cf(u);
-	PositionFunc pf(u);
-    // iteration object	
+    ColorFunc cf(u);
+    PositionFunc pf(u);
+    // iteration object
     visual_iteration<double> iter(cf, pf, graph, b, 500, tol, 0.0, 1);
     // Solve Au = b using conjugate gradient method
     itl::cg(A, u, b, L, iter);

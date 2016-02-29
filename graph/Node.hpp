@@ -1,9 +1,13 @@
 #pragma once
 
 #include "CME212/Util.hpp"
+#include "CME212/Point.hpp"
 #include "graph/NodeIterator.hpp"
 #include "graph/IncidentIterator.hpp"
 
+
+template <typename V, typename E>
+class Graph;
 
 /** @class Graph::Node
  * @brief Class representing the graph's nodes.

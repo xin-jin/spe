@@ -3,6 +3,10 @@
 #include <CME212/Util.hpp>
 #include "graph/EdgeIterator.hpp"
 
+
+template <typename V, typename E>
+class Graph;
+
 /** @class Graph::Edge
  * @brief Class representing the graph's edges.
  *

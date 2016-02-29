@@ -13,10 +13,6 @@
 #include "CME212/Point.hpp"
 #include "struct/ObjPool.hpp"
 #include "struct/IntWrapper.hpp"
-
-// Forward declare Graph for Node and Edge
-template <typename V, typename E>
-class Graph;
 #include "graph/Node.hpp"
 #include "graph/Edge.hpp"
 

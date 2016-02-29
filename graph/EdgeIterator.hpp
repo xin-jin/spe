@@ -3,6 +3,9 @@
 #include <CME212/Util.hpp>
 
 
+template <typename V, typename E>
+class Graph;
+
 /** @class Graph::EdgeIterator
  * @brief Iterator class for edges. A forward iterator. */
 template <typename V, typename E>

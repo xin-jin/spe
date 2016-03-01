@@ -8,8 +8,8 @@ EXEC += viewer
 EXEC += subgraph
 EXEC += shortest_path
 EXEC += mass_spring
-EXEC += unit_test/test_nodes
-EXEC += unit_test/test_edges
+EXEC += tests/test_nodes
+EXEC += tests/test_edges
 EXEC += mtl_test
 EXEC += poisson
 

@@ -12,6 +12,7 @@ EXEC += tests/test_nodes
 EXEC += tests/test_edges
 EXEC += mtl_test
 EXEC += poisson
+EXEC += space_search_test
 
 # Get the shell name to determine the OS
 UNAME := $(shell uname)

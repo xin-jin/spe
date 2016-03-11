@@ -38,7 +38,7 @@ DEPSFLAGS = -MD -MF $(DEPSFILE) -MP
 INCLUDES += -I. -I./lib -I./graph
 
 # Define CXX compile flags
-CXXFLAGS += -std=c++1y -O3 -funroll-loops -W -Wall -Wextra #-Wfatal-errors
+CXXFLAGS += -std=c++11 -O3 -funroll-loops -W -Wall -Wextra #-Wfatal-errors
 
 # Force Thrust to use OpenMP as its device system
 CXXFLAGS += -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP

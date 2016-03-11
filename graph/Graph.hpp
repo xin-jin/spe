@@ -46,9 +46,9 @@ public:
     typedef ::Edge<V, E> Edge;
     /** Synonym for Edge (following STL conventions). */
     typedef Edge edge_type;
-	
+
     /** Type of node iterators, which iterate over all graph edges. */
-	typedef ::NodeIterator<V, E> NodeIterator;
+    typedef ::NodeIterator<V, E> NodeIterator;
     /** Synonym for NodeIterator */
     typedef NodeIterator node_iterator;
 
@@ -385,11 +385,11 @@ public:
 
     /** Return an iterator pointing to the first node */
     node_iterator node_begin() const {
-        return node_iterator(this, 1);
+        return node_iterator(this, size_type(0));
     }
     /** Return an iterator pointing to the next position of the last node */
     node_iterator node_end() const {
-        return node_iterator(this, 0);
+        return node_iterator(this, size_type(size()));
     }
     /** Return an iterator pointing to the first edge */
     edge_iterator edge_begin() const {
@@ -401,12 +401,12 @@ public:
     }
 
 private:
-	friend Node;
-	friend Edge;
-	friend NodeIterator;
-	friend EdgeIterator;
-	friend IncidentIterator;
-	
+    friend Node;
+    friend Edge;
+    friend NodeIterator;
+    friend EdgeIterator;
+    friend IncidentIterator;
+
     ObjPool<NodeInfo> nodePool_;
     ObjPool<EdgeInfo> edgePool_;
     std::vector<n_uid_type> idx2uid_;

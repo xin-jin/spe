@@ -13,6 +13,7 @@
 
 #include <fstream>
 #include <cmath>
+#include <stack>
 
 #include "CME212/SDLViewer.hpp"
 #include "CME212/Util.hpp"
@@ -139,11 +140,20 @@ namespace mtl {
  *        not bb.contains(g.node(i).position())
  */
 void remove_box(GraphType& g, const Box3D& bb) {
+	// Since remove_node may rearrange indices, we need to store
+	// the nodes to be removed instead
+	std::stack<NodeType> ns;
     for (auto n : nodesRange(g)) {
         if (bb.contains(n.position())) {
-            g.remove_node(n);
+			ns.push(n);
         }
     }
+
+	// Remove the stored nodes
+	while (!ns.empty()) {
+		g.remove_node(ns.top());
+		ns.pop();
+	}
     return;
 }
 

@@ -11,42 +11,49 @@ class Graph;
 
 /** Return the node corresponding to a uid */
 template <typename Graph>
-struct Idx2Node: thrust::unary_function<typename Graph::size_type::IntType, 
+struct Idx2Node: thrust::unary_function<typename Graph::size_type::IntType,
                                         typename Graph::Node> {
-	using size_type = typename Graph::size_type;
+    using size_type = typename Graph::size_type;
 
-	Idx2Node(const Graph* g_): g(g_) {}
-	
+    Idx2Node(const Graph* g_): g(g_) {}
+
     typename Graph::Node operator()(typename size_type::IntType idx) const {
         return g->node(size_type(idx));
-    }	
-	
+    }
+
     const Graph *g;
 };
 
 /** @class Graph::NodeIterator
  * @brief Iterator class for nodes. A forward iterator. */
-template <typename V, typename E>
-struct NodeIterator:
-    thrust::transform_iterator<Idx2Node<Graph<V, E>>,
-                               thrust::counting_iterator<
-								   typename Graph<V, E>::size_type::IntType>, 
-                               typename Graph<V, E>::Node> {
-    using Graph = ::Graph<V, E>;
-    using size_type = typename Graph::size_type;
-    using super_t = thrust::transform_iterator<Idx2Node<Graph>,
-                                               thrust::counting_iterator<
-												   typename Graph::size_type::IntType>,
-                                               typename Graph::Node>;
+// TODO: cryptic error about size_type
+template <typename Graph>
+using NodeIterator = thrust::transform_iterator<Idx2Node<Graph>,
+                                                thrust::counting_iterator<unsigned>,
+                                                typename Graph::Node>;
 
-    NodeIterator(const Graph* g, typename Graph::size_type idx):
-        super_t(thrust::make_counting_iterator(idx.v), 
-                Idx2Node<Graph>(g)) {}
-};
+
+// template <typename V, typename E>
+// struct NodeIterator:
+//     thrust::transform_iterator<Idx2Node<Graph<V, E>>,
+//                                thrust::counting_iterator<
+//                                 typename Graph<V, E>::size_type::IntType>,
+//                                typename Graph<V, E>::Node> {
+//     using Graph = ::Graph<V, E>;
+//     using size_type = typename Graph::size_type;
+//     using super_t = thrust::transform_iterator<Idx2Node<Graph>,
+//                                                thrust::counting_iterator<
+//                                                 typename Graph::size_type::IntType>,
+//                                                typename Graph::Node>;
+
+//     NodeIterator(const Graph* g, typename Graph::size_type idx):
+//         super_t(thrust::make_counting_iterator(idx.v),
+//                 Idx2Node<Graph>(g)) {}
+// };
 
 /** Define STL-style synonym for NodeIterator */
-template <typename V, typename E>
-using node_iterator = NodeIterator<V, E>;
+template <typename Graph>
+using node_iterator = NodeIterator<Graph>;
 
 
 // Deprecated

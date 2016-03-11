@@ -48,7 +48,7 @@ public:
     typedef Edge edge_type;
 
     /** Type of node iterators, which iterate over all graph edges. */
-    typedef ::NodeIterator<V, E> NodeIterator;
+    typedef ::NodeIterator<Graph> NodeIterator;
     /** Synonym for NodeIterator */
     typedef NodeIterator node_iterator;
 
@@ -386,11 +386,15 @@ public:
 
     /** Return an iterator pointing to the first node */
     node_iterator node_begin() const {
-        return node_iterator(this, size_type(0));
+        return node_iterator(thrust::make_counting_iterator(size_type(0).v),
+                             Idx2Node<Graph>(this));
+        // return node_iterator(this, size_type(0));
     }
     /** Return an iterator pointing to the next position of the last node */
     node_iterator node_end() const {
-        return node_iterator(this, size_type(size()));
+        return node_iterator(thrust::make_counting_iterator(size().v),
+                             Idx2Node<Graph>(this));
+        // return node_iterator(this, size_type(size()));
     }
     /** Return an iterator pointing to the first edge */
     edge_iterator edge_begin() const {

@@ -14,6 +14,8 @@
 #include "CME212/Util.hpp"
 #include "CME212/Color.hpp"
 #include "CME212/Point.hpp"
+#include "thrust/for_each.h"
+#include "thrust/system/omp/execution_policy.h"
 
 #include "graph/Graph.hpp"
 #include "struct/combined_force.hpp"
@@ -62,22 +64,31 @@ using   size_type = typename GraphType::size_type;
  */
 template <typename G, typename F, typename C>
 double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
-    // Compute the t+dt position
-    for (auto it = g.node_begin(); it != g.node_end(); ++it) {
-        auto n = *it;
-        // Update the position of the node according to its velocity
-        // x^{n+1} = x^{n} + v^{n} * dt
-        n.position() += n.value().vel * dt;
-    }
+	// Compute the t+dt position	
+	thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(),
+					 [dt](NodeType n){ n.position() += n.value().vel * dt; });		
+	
+	// Deprecated
+    // for (auto it = g.node_begin(); it != g.node_end(); ++it) {
+    //     auto n = *it;
+    //     // Update the position of the node according to its velocity
+    //     // x^{n+1} = x^{n} + v^{n} * dt
+    //     n.position() += n.value().vel * dt;
+    // }
+
 
     constraint(g, t);
 
     // Compute the t+dt velocity
-    for (auto it = g.node_begin(); it != g.node_end(); ++it) {
-        auto n = *it;
-        // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
-        n.value().vel += force(n, t) * (dt / n.value().mass);
-    }
+	thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(),
+					 [dt, force, t](NodeType n) mutable { n.value().vel += force(n, t) * (dt / n.value().mass); });
+	
+	// Deprecated
+    // for (auto it = g.node_begin(); it != g.node_end(); ++it) {
+    //     auto n = *it;
+    //     // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
+    //     n.value().vel += force(n, t) * (dt / n.value().mass);
+    // }
 
     return t + dt;
 }
@@ -123,7 +134,7 @@ void initNodes(GraphType& g) {
 /** Initialize EdgeData */
 void initEdges(GraphType& g) {
     for (EdgeType&& e : edgesRange(g)) {
-        e.value().K = K;
+        e.value().K = 100.0/g.num_nodes();
         e.value().L = e.length();
     }
 }

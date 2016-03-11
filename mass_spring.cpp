@@ -134,7 +134,7 @@ void initNodes(GraphType& g) {
 /** Initialize EdgeData */
 void initEdges(GraphType& g) {
     for (EdgeType&& e : edgesRange(g)) {
-        e.value().K = 100.0/g.num_nodes();
+        e.value().K = 100.0;
         e.value().L = e.length();
     }
 }

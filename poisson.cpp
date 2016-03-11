@@ -27,6 +27,7 @@
 typedef Graph<bool,char> GraphType;  //<  DUMMY Placeholder
 using NodeType = GraphType::Node;
 using VecType = mtl::dense_vector<double>;
+using size_t = std::size_t;
 double tol = 1e-10;
 
 struct Force {

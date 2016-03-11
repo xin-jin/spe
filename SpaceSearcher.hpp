@@ -57,8 +57,7 @@ public:
     using iterator       = NeighborhoodIterator;
     using const_iterator = NeighborhoodIterator;
 
-public:
-
+private:
     using Pair = thrust::tuple<code_type, T>;
     template <typename T2Point>
     struct T2Pair: thrust::unary_function<T, Pair> {
@@ -87,6 +86,8 @@ public:
     template <typename PIter>
     using CodeIterator = thrust::transform_iterator<P2Code, PIter, code_type>;
     using ZipIterator = thrust::zip_iterator<Pair>;
+
+public:
 
     /////////////////
     // CONSTRUCTOR //
@@ -117,8 +118,8 @@ public:
         mc_(bb),
         z_data_(PairIterator<TIter, T2Point>(first, T2Pair<T2Point>(mc_, t2p)),
                 PairIterator<TIter, T2Point>(last, T2Pair<T2Point>(mc_, t2p))) {
-		thrust::sort(z_data_.begin(), z_data_.end());
-	}
+        thrust::sort(z_data_.begin(), z_data_.end());
+    }
 
     /** @brief SpaceSearcher Constructor.
      *
@@ -145,12 +146,10 @@ public:
                   TIter tfirst, TIter tlast,
                   PointIter pfirst, PointIter plast):
         mc_(bb),
-        z_data_(thrust::make_tuple(tfirst,
-                                   CodeIterator<PointIter>(pfirst, P2Code(mc_))),
-                thrust::make_tuple(tlast,
-                                   CodeIterator<PointIter>(plast, P2Code(mc_)))) {
-		thrust::sort(z_data_.begin(), z_data_.end());
-	}
+        z_data_(thrust::make_tuple(CodeIterator<PointIter>(pfirst, P2Code(mc_)), tfirst),
+                thrust::make_tuple(CodeIterator<PointIter>(plast, P2Code(mc_)), tlast)) {
+        thrust::sort(z_data_.begin(), z_data_.end());
+    }
 
     ///////////////
     // Accessors //

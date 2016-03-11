@@ -23,7 +23,7 @@ namespace detail {
      */
     inline uint32_t spread_bits(uint32_t x) {
         for (char i = 9; i > 0; --i) {
-            if ((x >> i) & 1U == 1U) {
+            if (((x >> i) & 1U) == 1U) {
                 x |= 1U << (i*3);
                 x &= ~(1U << i);
             }
@@ -42,7 +42,7 @@ namespace detail {
 		for (char i = 9; i > 0; --i) {
 			y |= ((x >> (3*i)) & 1U) << i;
 		}
-        return x;
+        return y | (x & 1U);
     }
 
     /** Smears the bits in c into the low bits by steps of one

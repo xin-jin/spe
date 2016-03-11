@@ -187,10 +187,10 @@ public:
      *       new num_nodes() == old num_nodes() if @return is false
      * @return Whether the node is an valid node of the graph (before removal)
      *
-     * Amortized time complexity is O(sum of degrees of all @a n's neighbors)
-     * The indices of the remaining nodes may be changed.
-     * All existing node_iterators at @a n are invalidated, and
-     * all Node objects corresponding to @a n are invalidated
+     * Amortized time complexity is O(sum of degrees of all @a n's neighbors) The
+     * indices of the remaining nodes may be changed.  All existing node_iterators
+     * whose underlying nodes' indices larger than @a n's are invalidated, and all
+     * Node objects corresponding to @a n are invalidated
      */
     bool remove_node(const Node& n) {
         if (!has_node(n)) return false;
@@ -222,10 +222,11 @@ public:
      *       new num_nodes() == old num_nodes() if @return is false
      * @return Whether the node is an valid node of the graph (before removal)
      *
-     * Amortized time complexity is O(sum of degrees of all the removed node's neighbors)
-     * The indices of the remaining nodes may be changed.
-     * All existing node_iterators at the removed node are invalidated, and
-     * all Node objects corresponding to @a n are invalidated
+     * Amortized time complexity is O(sum of degrees of all the removed node's
+     * neighbors) The indices of the remaining nodes may be changed.  All existing
+     * node_iterators whose underlying nodes' indices larger than that of the removed
+     * node are invalidated, and all Node objects corresponding to @a n are
+     * invalidated
      */
     bool remove_node(node_iterator n_it) {
         return NodeIterator(this, remove_node(*n_it));

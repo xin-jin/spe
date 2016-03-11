@@ -24,6 +24,8 @@ struct Idx2Node: thrust::unary_function<typename Graph::size_type::IntType,
     const Graph *g;
 };
 
+/** @class Graph::NodeIterator
+ * @brief Iterator class for nodes. A forward iterator. */
 template <typename V, typename E>
 struct NodeIterator:
     thrust::transform_iterator<Idx2Node<Graph<V, E>>,

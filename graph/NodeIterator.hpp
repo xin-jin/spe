@@ -10,29 +10,29 @@ template <typename V, typename E>
 class Graph;
 
 /** Return the node corresponding to a uid */
-template <typename Graph>
-struct Idx2Node: thrust::unary_function<typename Graph::size_type::IntType,
-                                        typename Graph::Node> {
-    using size_type = typename Graph::size_type;
+template <typename GraphType>
+struct Idx2Node: thrust::unary_function<typename GraphType::size_type::IntType,
+                                        typename GraphType::Node> {
+    using size_type = typename GraphType::size_type;
 
-    Idx2Node(const Graph* g_): g(g_) {}
+    Idx2Node(const GraphType* g_): g(g_) {}
 
-    typename Graph::Node operator()(typename size_type::IntType idx) const {
+    typename GraphType::Node operator()(typename size_type::IntType idx) const {
         return g->node(size_type(idx));
     }
 
-    const Graph *g;
+    const GraphType *g;
 };
 
 /** @class Graph::NodeIterator
  * @brief Iterator class for nodes. A forward iterator. */
-// TODO: cryptic error about size_type
-template <typename Graph>
-using NodeIterator = thrust::transform_iterator<Idx2Node<Graph>,
-                                                thrust::counting_iterator<unsigned>,
-                                                typename Graph::Node>;
+// TODO: cryptic error with GraphType::size_type not found
+template <typename GraphType>
+using NodeIterator = thrust::transform_iterator<Idx2Node<GraphType>,
+                                                thrust::counting_iterator<unsigned>, 
+                                                typename GraphType::Node>;
 
-
+// Inheritance approach has some type traits issue with difference_type
 // template <typename V, typename E>
 // struct NodeIterator:
 //     thrust::transform_iterator<Idx2Node<Graph<V, E>>,

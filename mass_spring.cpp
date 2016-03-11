@@ -294,7 +294,7 @@ public:
         Box3D bigbb(Point(-2,-2,-2), Point(2,2,2));
         SpaceSearcher<NodeType> searcher(bigbb, g.node_begin(), g.node_end(), n2p);
 
-        auto updateVel = [&searcher](NodeType n){
+        auto updateVel = [&searcher](NodeType n) {
             const Point &center = n.position();
             double radius2 = std::numeric_limits<double>::max();
 
@@ -302,16 +302,17 @@ public:
                 radius2 = std::min(radius2, normSq(eit.node2().position() - center));
             }
             radius2 *= 0.9;
+			double radius = std::sqrt(radius2);
 
-            Box3D bb(n.position()-radius2, n.position()+radius2);
+            Box3D bb(n.position()-radius, n.position()+radius);
 
             for (auto nit = searcher.begin(bb); nit != searcher.end(bb); ++nit) {
                 NodeType n2 = *nit;
                 Point r = center - n2.position();
-                double l2 = norm(r);
+                double l2 = normSq(r);
                 if (n2 != n && l2 < radius2) {
                     // Remove our velocity component in r
-                    n.value().vel -= (dot(r, n.value().vel) / l2) * r;
+                    n.value().vel -= (dot(r, n.value().vel) / std::sqrt(l2)) * r;
                 }
             }
         };

@@ -20,6 +20,7 @@
 #include "graph/Graph.hpp"
 #include "struct/combined_force.hpp"
 #include "struct/combined_constraint.hpp"
+#include "SpaceSearcher.hpp"
 
 
 
@@ -64,11 +65,11 @@ using   size_type = typename GraphType::size_type;
  */
 template <typename G, typename F, typename C>
 double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
-	// Compute the t+dt position	
-	thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(),
-					 [dt](NodeType n){ n.position() += n.value().vel * dt; });		
-	
-	// Deprecated
+    // Compute the t+dt position
+    thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(),
+                     [dt](NodeType n){ n.position() += n.value().vel * dt; });
+
+    // Deprecated
     // for (auto it = g.node_begin(); it != g.node_end(); ++it) {
     //     auto n = *it;
     //     // Update the position of the node according to its velocity
@@ -80,10 +81,10 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
     constraint(g, t);
 
     // Compute the t+dt velocity
-	thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(),
-					 [dt, force, t](NodeType n) mutable { n.value().vel += force(n, t) * (dt / n.value().mass); });
-	
-	// Deprecated
+    thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(),
+                     [dt, force, t](NodeType n) mutable { n.value().vel += force(n, t) * (dt / n.value().mass); });
+
+    // Deprecated
     // for (auto it = g.node_begin(); it != g.node_end(); ++it) {
     //     auto n = *it;
     //     // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
@@ -284,6 +285,41 @@ private:
     double r_ = .15;
 };
 
+/** A constraint that prevents the mass_spring model from passing through itself */
+class SelfCollisionConstraint {
+public:
+    void operator()(GraphType& g, double) const {
+        // Initialize the space searcher
+        auto n2p = [](const NodeType& n){ return n.position(); };
+        Box3D bigbb(Point(-2,-2,-2), Point(2,2,2));
+        SpaceSearcher<NodeType> searcher(bigbb, g.node_begin(), g.node_end(), n2p);
+
+        auto updateVel = [&searcher](NodeType n){
+            const Point &center = n.position();
+            double radius2 = std::numeric_limits<double>::max();
+
+            for (auto eit = n.edge_begin(); eit != n.edge_end(); ++eit) {
+                radius2 = std::min(radius2, normSq(eit.node2().position() - center));
+            }
+            radius2 *= 0.9;
+
+            Box3D bb(n.position()-radius2, n.position()+radius2);
+
+            for (auto nit = searcher.begin(bb); nit != searcher.end(bb); ++nit) {
+                NodeType n2 = *nit;
+                Point r = center - n2.position();
+                double l2 = norm(r);
+                if (n2 != n && l2 < radius2) {
+                    // Remove our velocity component in r
+                    n.value().vel -= (dot(r, n.value().vel) / l2) * r;
+                }
+            }
+        };
+
+        thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(), updateVel);
+    }
+};
+
 
 double Problem1Force::L;
 double DampingForce::c;
@@ -350,24 +386,27 @@ int main(int argc, char** argv) {
         if (n.position() == Point(0, 0, 0) || n.position() == Point(1, 0, 0))
             fixedC += n;
     }
-    auto customConstraint = makeCombinedConstraint(fixedC, PlaneConstraint(), SphereConstraint());
+    auto customConstraint = makeCombinedConstraint(fixedC,
+                                                   PlaneConstraint(),
+                                                   SphereConstraint(),
+                                                   SelfCollisionConstraint());
 
     for (double t = t_start; t < t_end; t += dt) {
         //std::cout << "t = " << t << std::endl;
         symp_euler_step(graph, t, dt, customForce, customConstraint);
 
         // Clear the viewer's nodes and edges
-        viewer.clear();
-        node_map.clear();
+        // viewer.clear();
+        // node_map.clear();
 
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
-        viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
+        // viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
         viewer.set_label(t);
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
-		if (graph.size() < 100)
+        if (graph.size() < 100)
             CME212::sleep(0.001);
     }
 

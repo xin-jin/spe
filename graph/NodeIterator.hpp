@@ -6,9 +6,6 @@
 #include "thrust/functional.h"
 
 
-template <typename V, typename E>
-class Graph;
-
 /** Return the node corresponding to a uid */
 template <typename GraphType>
 struct Idx2Node: thrust::unary_function<typename GraphType::size_type::IntType,

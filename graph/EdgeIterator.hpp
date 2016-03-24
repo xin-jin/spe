@@ -3,18 +3,15 @@
 #include <CME212/Util.hpp>
 
 
-template <typename V, typename E>
-class Graph;
-
 /** @class Graph::EdgeIterator
  * @brief Iterator class for edges. A forward iterator. */
-template <typename V, typename E>
-class EdgeIterator: private totally_ordered<EdgeIterator<V, E>> {
+template <typename Graph>
+class EdgeIterator: private totally_ordered<EdgeIterator<Graph>> {
 public:
     // These type definitions help us use STL's iterator_traits.
-	using Edge = typename Graph<V, E>::Edge;
-	using edge_iterator = typename Graph<V, E>::edge_iterator;
-	using e_uid_type = typename Graph<V, E>::e_uid_type;
+	using Edge = typename Graph::Edge;
+	using edge_iterator = typename Graph::edge_iterator;
+	using e_uid_type = typename Graph::e_uid_type;
     /** Element type. */
     typedef Edge value_type;
     /** Type of pointers to elements. */
@@ -48,10 +45,10 @@ public:
     }
 
 private:
-    friend class Graph<V, E>;
+    friend Graph;
     e_uid_type uid_;
     // Pointer back to the Graph contrainer
-    Graph<V, E> *graph_;
+    Graph *graph_;
 
     void fix() {
         while ((!graph_->edgePool_.alive(uid_))
@@ -62,8 +59,8 @@ private:
 
     // Return the begin position if isBegin == true,
     // otherwise return the end position
-    EdgeIterator(const Graph<V, E>* graph, bool isBegin):
-        graph_(const_cast<Graph<V, E>*>(graph)) {
+    EdgeIterator(const Graph* graph, bool isBegin):
+        graph_(const_cast<Graph*>(graph)) {
         if (isBegin)
             uid_.v = 0;
         else

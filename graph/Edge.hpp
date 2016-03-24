@@ -4,24 +4,21 @@
 #include "graph/EdgeIterator.hpp"
 
 
-template <typename V, typename E>
-class Graph;
-
 /** @class Graph::Edge
  * @brief Class representing the graph's edges.
  *
  * Edges are order-insensitive pairs of nodes. Two Edges with the same nodes
  * are considered equal if they connect the same nodes, in either order.
  */
-template <typename V, typename E>
-class Edge: private totally_ordered<Edge<V, E>> {
+template <typename Graph>
+class Edge: private totally_ordered<Edge<Graph>> {
  public:
-    using e_uid_type = typename Graph<V, E>::e_uid_type;
-    using EdgeInfo = typename Graph<V, E>::EdgeInfo;
-    using Node = typename Graph<V, E>::Node;
-    using EdgeIterator = typename Graph<V, E>::EdgeIterator;
-    using IncidentIterator = typename Graph<V, E>::IncidentIterator;
-    using edge_value_type = E;
+    using e_uid_type = typename Graph::e_uid_type;
+    using EdgeInfo = typename Graph::EdgeInfo;
+    using Node = typename Graph::Node;
+    using EdgeIterator = typename Graph::EdgeIterator;
+    using IncidentIterator = typename Graph::IncidentIterator;
+    using edge_value_type = typename Graph::edge_value_type;
 
     /** Construct an invalid Edge. */
     Edge() = delete;
@@ -72,17 +69,17 @@ class Edge: private totally_ordered<Edge<V, E>> {
 
  private:
     // Allow Graph to access Edge's private member data and functions.
-    friend class Graph<V, E>;
+    friend Graph;
     friend EdgeIterator;
     friend IncidentIterator;
 
     // Constructs an edge given a graph pointer and two node uids
-    explicit Edge(const Graph<V, E>* graph, e_uid_type uid)
-                  : graph_(const_cast<Graph<V, E>*>(graph)), uid_(uid),
+    explicit Edge(const Graph* graph, e_uid_type uid)
+                  : graph_(const_cast<Graph*>(graph)), uid_(uid),
                   info_(graph_->edgePool_.info(uid)) {}
 
     // Pointer back to the Graph contrainer
-    Graph<V, E> *graph_;
+    Graph *graph_;
     // The edge's uid
     e_uid_type uid_;
     // The underlying EdgeInfo

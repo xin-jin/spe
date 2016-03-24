@@ -3,19 +3,16 @@
 #include "CME212/Util.hpp"
 
 
-template <typename V, typename E>
-class Graph;
-
 /** @class Graph::IncidentIterator
  * @brief Iterator class for edges incident to a node. A forward iterator. */
-template <typename V, typename E>
-class IncidentIterator: private totally_ordered<IncidentIterator<V, E>> {
+template <typename Graph>
+class IncidentIterator: private totally_ordered<IncidentIterator<Graph>> {
 public:
-	using size_type = typename Graph<V, E>::size_type;
-	using n_uid_type = typename Graph<V, E>::n_uid_type;
-	using Node = typename Graph<V, E>::Node;
-	using Edge = typename Graph<V, E>::Edge;
-	using NodeInfo = typename Graph<V, E>::NodeInfo;
+	using size_type = typename Graph::size_type;
+	using n_uid_type = typename Graph::n_uid_type;
+	using Node = typename Graph::Node;
+	using Edge = typename Graph::Edge;
+	using NodeInfo = typename Graph::NodeInfo;
 	using AdjListType = typename NodeInfo::AdjListType;
 	using incident_iterator = IncidentIterator;
 
@@ -66,15 +63,15 @@ private:
     friend Node;
 
     // The surrounding graph
-    Graph<V, E> *graph_;
+    Graph *graph_;
 
     // The underlying iterator
     typename AdjListType::iterator pos_;
 
     // if (isBegin) then point to the begin position,
     // else point to the end position
-    IncidentIterator(const Graph<V, E>* graph, n_uid_type uid, bool isBegin)
-        : graph_(const_cast<Graph<V, E>*>(graph)) {
+    IncidentIterator(const Graph* graph, n_uid_type uid, bool isBegin)
+        : graph_(const_cast<Graph*>(graph)) {
         if (isBegin)
             pos_ = graph_->nodePool_.info(uid).adjList.begin();
         else

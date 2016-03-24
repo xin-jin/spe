@@ -6,24 +6,21 @@
 #include "graph/IncidentIterator.hpp"
 
 
-template <typename V, typename E>
-class Graph;
-
 /** @class Graph::Node
  * @brief Class representing the graph's nodes.
  *
  * Node objects are used to access information about the Graph's nodes.
  */
-template <typename V, typename E>
-class Node: private totally_ordered<Node<V, E>> {
+template <typename Graph>
+class Node: private totally_ordered<Node<Graph>> {
  public:
-    using size_type = typename Graph<V, E>::size_type;
-    using n_uid_type = typename Graph<V, E>::n_uid_type;
-    using node_value_type = V;
-    using incident_iterator = typename Graph<V, E>::incident_iterator;
+    using size_type = typename Graph::size_type;
+    using n_uid_type = typename Graph::n_uid_type;
+    using node_value_type = typename Graph::node_value_type;
+    using incident_iterator = typename Graph::incident_iterator;
     using IncidentIterator = incident_iterator;
-    using NodeIterator = typename Graph<V, E>::NodeIterator;
-    using Edge = typename Graph<V, E>::Edge;
+    using NodeIterator = typename Graph::NodeIterator;
+    using Edge = typename Graph::Edge;
 
     /** Construct an invalid node.
      *
@@ -103,17 +100,17 @@ class Node: private totally_ordered<Node<V, E>> {
     }
 
  private:
-    friend class Graph<V, E>;
+    friend Graph;
     friend Edge;
     friend NodeIterator;
     friend incident_iterator;
 
     /** Constructs a Node corresponding to given index and graph */
-    Node(const Graph<V, E>* graph, n_uid_type uid)
-        : graph_(const_cast<Graph<V, E>*>(graph)), uid_(uid) {}
+    Node(const Graph* graph, n_uid_type uid)
+        : graph_(const_cast<Graph*>(graph)), uid_(uid) {}
 
     // Pointer back to the Graph container
-    Graph<V, E> *graph_;
+    Graph *graph_;
     // The element's index in the Graph container
     n_uid_type uid_;
 };

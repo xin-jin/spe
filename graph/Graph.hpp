@@ -39,11 +39,11 @@ public:
     /** Type of this graph. */
     typedef Graph graph_type;
 
-    typedef ::Node<V, E> Node;
+    typedef ::Node<Graph> Node;
     /** Synonym for Node (following STL conventions). */
     typedef Node node_type;
 
-    typedef ::Edge<V, E> Edge;
+    typedef ::Edge<Graph> Edge;
     /** Synonym for Edge (following STL conventions). */
     typedef Edge edge_type;
 
@@ -53,12 +53,12 @@ public:
     typedef NodeIterator node_iterator;
 
     /** Type of edge iterators, which iterate over all graph edges. */
-    typedef ::EdgeIterator<V, E> EdgeIterator;
+    typedef ::EdgeIterator<Graph> EdgeIterator;
     /** Synonym for EdgeIterator */
     typedef EdgeIterator edge_iterator;
 
     /** Type of incident iterators, which iterate incident edges to a node. */
-    typedef ::IncidentIterator<V, E> IncidentIterator;
+    typedef ::IncidentIterator<Graph> IncidentIterator;
     /** Synonym for IncidentIterator */
     typedef IncidentIterator incident_iterator;
 
